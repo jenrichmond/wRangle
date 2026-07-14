@@ -1,8 +1,8 @@
 # Data Wrangling Tool
 
-An interactive decision tree that helps psychology students clean messy survey
+An interactive tool that helps psychology students clean messy survey
 data in R, using the tidyverse (dplyr, tidyr, readr, lubridate), janitor,
-naniar, and here.
+naniar, and here packages.
 
 Click through from raw import to an analysis-ready dataset, or jump straight
 to whichever task matches what you're stuck on — importing, renaming,

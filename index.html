@@ -18,9 +18,13 @@
     --amber:#8a5ca8;
     --amber-pale:#f1e9f8;
     --border:#e6d9f0;
-    --code-bg:#2a2033;
-    --code-ink:#efeaf3;
-    --code-accent:#7fddb0;
+    --code-bg:#002240;
+    --code-ink:#ffffff;
+    --code-accent:#80ffbb;
+    --code-comment:#0088ff;
+    --code-string:#3ad900;
+    --code-const:#ff628c;
+    --code-keyword:#ff9d00;
     --radius:14px;
     --shadow: 0 2px 10px rgba(70,40,90,0.08);
   }
@@ -270,7 +274,10 @@
     line-height:1.55;
     color: var(--code-ink);
   }
-  .code-block .comment{ color:#9a8aa8; }
+  .code-block .comment{ color: var(--code-comment); font-style: italic; }
+  .code-block .string{ color: var(--code-string); }
+  .code-block .const{ color: var(--code-const); }
+  .code-block .keyword{ color: var(--code-keyword); }
   .copy-btn{
     position:absolute;
     top:8px;
@@ -398,6 +405,10 @@
     nav.tabs button{ font-size: 0.78rem; padding: 9px; }
   }
 </style>
+<!-- GoatCounter analytics: sign up free at https://www.goatcounter.com, then
+     replace MYCODE below with the site code you choose during signup -->
+<script data-goatcounter="https://MYCODE.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1077,14 +1088,26 @@ function escapeHtml(str){
 }
 
 function highlightCode(code){
-  // minimal highlighting: comments in muted color
-  return escapeHtml(code).split("\n").map(line=>{
-    const idx = line.indexOf("#");
-    if(idx !== -1){
-      return line.slice(0,idx) + '<span class="comment">' + line.slice(idx) + '</span>';
-    }
-    return line;
-  }).join("\n");
+  // RStudio "Cobalt" theme palette: comments blue-italic, strings green,
+  // constants (numbers/NA/TRUE/FALSE) pink, control-flow keywords orange.
+  const constants = ["TRUE","FALSE","NA","NULL","Inf","NaN"];
+  const keywords = ["function","if","else","for","while","repeat","return","next","break","in"];
+  const tokenRe = new RegExp(
+    "(#.*$)" +                                              // comment
+    "|(\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*')" +   // string
+    "|\\b(" + constants.join("|") + ")\\b" +                 // constant
+    "|\\b(" + keywords.join("|") + ")\\b" +                  // keyword
+    "|\\b(\\d+\\.?\\d*)\\b",                                 // number
+    "gm"
+  );
+  return escapeHtml(code).replace(tokenRe, (m, comment, str, cst, kw, num) => {
+    if(comment) return '<span class="comment">' + comment + '</span>';
+    if(str) return '<span class="string">' + str + '</span>';
+    if(cst) return '<span class="const">' + cst + '</span>';
+    if(kw) return '<span class="keyword">' + kw + '</span>';
+    if(num) return '<span class="const">' + num + '</span>';
+    return m;
+  });
 }
 
 function checklistHtml(node){
