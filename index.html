@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Wrangling Tool — Psychology Survey Data in R</title>
+<style>
+  :root{
+    --bg:#f8f3fc;
+    --panel:#ffffff;
+    --ink:#3a2a46;
+    --ink-soft:#6e5b7c;
+    --teal:#5c3e70;
+    --teal-dark:#402c50;
+    --teal-pale:#ede1f5;
+    --indigo:#1c6b57;
+    --indigo-pale:#e1f5ea;
+    --amber:#8a5ca8;
+    --amber-pale:#f1e9f8;
+    --border:#e6d9f0;
+    --code-bg:#2a2033;
+    --code-ink:#efeaf3;
+    --code-accent:#7fddb0;
+    --radius:14px;
+    --shadow: 0 2px 10px rgba(70,40,90,0.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(180deg, #efe0f7 0%, var(--bg) 260px);
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+  header.page-head{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+  header.page-head h1{
+    font-size: 1.7rem;
+    margin: 0 0 6px;
+    color: var(--teal-dark);
+    letter-spacing: -0.01em;
+  }
+  header.page-head p{
+    margin:0;
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+  }
+  .badge-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:center;
+    margin-top:12px;
+  }
+  .pkg-badge{
+    font-size:0.72rem;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--indigo-pale);
+    color: var(--indigo);
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid #bfe8d6;
+  }
+
+  .intro-card{
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .intro-card h2{
+    margin: 0 0 8px;
+    font-size: 1.02rem;
+    color: var(--teal-dark);
+  }
+  .intro-card p{ margin: 6px 0; color: var(--ink-soft); font-size:0.93rem; }
+  .intro-card code{
+    background: var(--teal-pale);
+    color: var(--teal-dark);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.85em;
+  }
+
+  nav.tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom: 16px;
+  }
+  nav.tabs button{
+    flex:1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  nav.tabs button.active{
+    background: var(--teal);
+    border-color: var(--teal);
+    color: white;
+  }
+  nav.tabs button:hover:not(.active){
+    border-color: var(--teal);
+    color: var(--teal-dark);
+  }
+
+  .map-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px,1fr));
+    gap:12px;
+    margin-bottom: 20px;
+  }
+  .map-chip{
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor:pointer;
+    text-align:left;
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    transition: transform .12s ease, border-color .12s ease;
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+  }
+  .map-chip:hover{ transform: translateY(-2px); border-color: var(--teal); }
+  .map-chip .ico{
+    font-size:1.6rem;
+    flex-shrink:0;
+    line-height:1;
+    margin-top:1px;
+  }
+  .map-chip .chip-text{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .map-chip .lbl{ font-weight:700; font-size:1rem; }
+  .map-chip .sub{ font-size:0.82rem; color: var(--ink-soft); line-height:1.35; font-weight:400; }
+
+  #treePanel, #refPanel{ display:none; }
+  #treePanel.active, #refPanel.active{ display:block; }
+
+  .breadcrumbs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    align-items:center;
+    margin-bottom: 14px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    min-height: 22px;
+  }
+  .breadcrumbs button{
+    background:none;
+    border:none;
+    color: var(--teal-dark);
+    cursor:pointer;
+    font-size: 0.82rem;
+    padding: 2px 4px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .breadcrumbs .sep{ color: #c6b3d9; }
+
+  .card{
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+
+  .q-eyebrow{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color: var(--amber);
+    font-weight:700;
+    margin-bottom: 6px;
+  }
+  .q-text{
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+  .opt-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .opt-btn{
+    text-align:left;
+    background: var(--teal-pale);
+    border: 1px solid #d9c4ea;
+    color: var(--teal-dark);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    transition: background .12s ease;
+  }
+  .opt-btn:hover{ background:#e3d2f0; }
+  .opt-btn .arrow{ float:right; opacity:0.6; }
+
+  .a-eyebrow{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color: var(--teal);
+    font-weight:700;
+    margin-bottom: 6px;
+  }
+  .a-title{
+    font-size: 1.18rem;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+  .a-explain{
+    color: var(--ink-soft);
+    font-size: 0.94rem;
+    margin: 0 0 14px;
+  }
+  .pkg-tags{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom: 14px;
+  }
+  .pkg-tag{
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    background: var(--indigo-pale);
+    color: var(--indigo);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .code-block{
+    position:relative;
+    background: var(--code-bg);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    overflow:hidden;
+  }
+  .code-block pre{
+    margin:0;
+    padding: 16px 18px;
+    overflow-x:auto;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.84rem;
+    line-height:1.55;
+    color: var(--code-ink);
+  }
+  .code-block .comment{ color:#9a8aa8; }
+  .copy-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: var(--code-accent);
+    font-size: 0.72rem;
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{ background: rgba(255,255,255,0.16); }
+
+  .tip-box{
+    background: var(--amber-pale);
+    border-left: 3px solid var(--amber);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: #4a2e5c;
+    margin-bottom: 14px;
+  }
+  .tip-box b{ color: var(--amber); }
+
+  .checklist-box{
+    background: var(--indigo-pale);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+  }
+  .checklist-box[open]{ padding-bottom: 16px; }
+  .checklist-title{
+    font-size: 0.85rem;
+    color: var(--indigo);
+    font-weight:700;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .checklist-box ul{
+    margin: 10px 0 0;
+    padding-left: 1.15em;
+    color: var(--ink);
+  }
+  .checklist-box li{
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .checklist-box li:last-child{ margin-bottom: 0; }
+  .checklist-box b{ color: var(--indigo); }
+
+  .next-label{
+    font-size: 0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color: var(--ink-soft);
+    margin: 16px 0 8px;
+    font-weight:700;
+  }
+
+  .nav-row{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-top: 4px;
+  }
+  .ghost-btn{
+    background:none;
+    border:1px solid var(--border);
+    color: var(--ink-soft);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    cursor:pointer;
+  }
+  .ghost-btn:hover{ border-color: var(--teal); color: var(--teal-dark); }
+
+  /* Reference view */
+  .ref-search{
+    width:100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 0.92rem;
+    margin-bottom: 16px;
+    background: var(--panel);
+  }
+  .ref-group{ margin-bottom: 22px; }
+  .ref-group h3{
+    color: var(--teal-dark);
+    font-size: 0.98rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .ref-item{ margin-bottom: 18px; }
+  .ref-item-title{ font-weight:700; font-size:0.95rem; margin-bottom:4px; }
+  .ref-item .a-explain{ margin-bottom: 8px; }
+
+  footer{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    margin-top: 30px;
+  }
+  footer p{ margin: 4px 0; }
+  footer a{ color: var(--teal); text-decoration: underline; text-underline-offset: 2px; }
+  .footer-btn{
+    display:inline-block;
+    margin-top: 16px;
+    padding: 10px 22px;
+    background: var(--teal);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+  .footer-btn:hover{ background: var(--teal-dark); }
+
+  @media (max-width: 600px){
+    .wrap{ padding: 18px 12px 60px; }
+    .card{ padding: 16px; }
+    nav.tabs button{ font-size: 0.78rem; padding: 9px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <h1>Data Wrangling Tool</h1>
+    <p>Cleaning messy psychology survey data with R &amp; the tidyverse — click your way from raw export to analysable dataset.</p>
+    <div class="badge-row">
+      <span class="pkg-badge">dplyr</span>
+      <span class="pkg-badge">tidyr</span>
+      <span class="pkg-badge">readr</span>
+      <span class="pkg-badge">lubridate</span>
+      <span class="pkg-badge">janitor</span>
+      <span class="pkg-badge">naniar</span>
+      <span class="pkg-badge">here</span>
+    </div>
+  </header>
+
+  <div class="intro-card">
+    <h2>How to use this</h2>
+    <p>Data cleaning usually follows a fairly consistent set of steps — from setting up your project, through importing and checking your data, to saving a clean version ready for analysis. You can work through those steps in order from start to finish, or jump straight to whichever task matches what you're stuck on right now — whatever's useful for your data today. Each path ends with real R code you can copy into your script, plus a tip about why it matters.</p>
+    <p>Before you start, install the packages once: <code>install.packages(c("tidyverse", "janitor", "naniar", "here"))</code>. Then at the top of every cleaning script: <code>library(tidyverse)</code> loads dplyr, tidyr, readr, and lubridate together; add <code>library(janitor)</code>, <code>library(naniar)</code>, and <code>library(here)</code> separately.</p>
+    <p>Start every project as an <b>RStudio Project</b> with separate folders for raw and clean data, and use <code>here()</code> to build file paths (e.g. <code>here("data", "raw", "survey_raw.csv")</code>) instead of typing them out by hand — see the first branch below.</p>
+  </div>
+
+  <nav class="tabs">
+    <button id="tabTree" class="active" onclick="showView('tree')">Cleaning steps</button>
+    <button id="tabRef" onclick="showView('ref')">Quick reference</button>
+  </nav>
+
+  <div id="treePanel" class="active">
+    <div class="map-grid" id="mapGrid"></div>
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+    <div class="card" id="cardArea"></div>
+  </div>
+
+  <div id="refPanel">
+    <input type="text" class="ref-search" id="refSearch" placeholder="Search topics or code (e.g. 'dates', 'missing', 'pivot')...">
+    <div id="refList"></div>
+  </div>
+
+  <footer>
+    <p>Built by Reveal Research in collaboration with Claude Cowork for psychology students starting out in R. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> — share and adapt freely, with credit. Code is illustrative. Be sure to adapt variable and file names to your own dataset.</p>
+    <a class="footer-btn" href="https://www.revealresearch.org" target="_blank" rel="noopener">Visit Reveal Research →</a>
+  </footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   NODE GRAPH
+   type: "question" -> { text, options:[{label, next}] }
+   type: "answer"   -> { title, pkgs:[], explain, code, tip, next:[{label,next}] (optional) }
+---------------------------------------------------------- */
+const nodes = {
+
+  /* ---------------- PROJECT SETUP ---------------- */
+  "a-project-setup": { type:"answer", title:"Set up an R Project folder", pkgs:["here"],
+    explain:"Before you write a single line of cleaning code, set up a proper R Project with separate folders for raw and clean data. This keeps your original raw file safe from being overwritten, and — combined with the here package — means your file paths work on any computer, not just yours.",
+    code:`# In RStudio: File > New Project > New Directory > New Project
+# This creates a .Rproj file at your project's root folder
+
+# Project folder structure:
+#
+# my_project/
+# |-- my_project.Rproj
+# |-- data/
+# |   |-- raw/      <- original files, never edited by hand
+# |   \`-- clean/    <- outputs from your cleaning script
+# \`-- scripts/
+#     \`-- 01_clean_data.R
+
+# Inside that project, create the data folders (once):
+dir.create("data/raw", recursive = TRUE)
+dir.create("data/clean", recursive = TRUE)
+
+# Install the here package once
+install.packages("here")
+library(here)
+
+# here() builds a path from your project's root, no matter which
+# sub-folder your script lives in or who runs it
+here("data", "raw", "survey_raw.csv")`,
+    tip:"Never hard-code a full file path like <code>\"C:/Users/Jen/Desktop/survey.csv\"</code> — it will break on anyone else's computer (including future-you on a new laptop). <code>here()</code> builds paths relative to your project's root folder instead, so the same script runs anywhere.",
+    next:[{label:"Now import my raw data file", next:"q-import"}]
+  },
+
+  /* ---------------- IMPORT ---------------- */
+  "q-import": { type:"question", text:"What kind of file are you importing?", options:[
+    {label:"A .csv file", next:"a-import-csv"},
+    {label:"An Excel file (.xlsx)", next:"a-import-excel"},
+    {label:"An SPSS file (.sav)", next:"a-import-spss"},
+    {label:"A Qualtrics export", next:"a-import-qualtrics"}
+  ]},
+
+  "a-import-csv": { type:"answer", title:"Import a CSV file", pkgs:["readr","here"],
+    explain:"read_csv() guesses each column's type from the data and is far more predictable than base R's read.csv(). Wrapping the file path in here() means this works whether you run it from a script, a notebook, or someone else's computer.",
+    code:`library(readr)
+library(here)
+
+survey_raw <- read_csv(here("data", "raw", "survey_raw.csv"))
+
+# check for anything readr couldn't parse cleanly
+problems(survey_raw)`,
+    tip:"Always read into a <b>new</b> object (survey_raw) and never edit the CSV by hand. Treat the raw file as untouchable — that's why it lives in data/raw/.",
+    next:[{label:"Now get an overview of it", next:"a-overview"}]
+  },
+
+  "a-import-excel": { type:"answer", title:"Import an Excel file", pkgs:["readxl","here"],
+    explain:"readxl is part of the wider tidyverse family and pairs naturally with read_csv() — same idea, for .xlsx files.",
+    code:`library(readxl)
+library(here)
+
+survey_raw <- read_excel(here("data", "raw", "survey_raw.xlsx"), sheet = 1)`,
+    tip:"If your spreadsheet has extra title rows above the real header, add <code>skip = n</code> to skip them.",
+    next:[{label:"Now get an overview of it", next:"a-overview"}]
+  },
+
+  "a-import-spss": { type:"answer", title:"Import an SPSS (.sav) file", pkgs:["haven","here"],
+    explain:"haven is the tidyverse-adjacent package for reading SPSS/Stata/SAS files. SPSS files often store labelled values (e.g. 1 = 'Male') as a special haven_labelled type, which you'll usually want to convert.",
+    code:`library(haven)
+library(here)
+
+survey_raw <- read_sav(here("data", "raw", "survey_raw.sav"))
+
+# turn value labels into a proper R factor
+survey_raw <- survey_raw |> as_factor()`,
+    tip:"Run <code>str(survey_raw)</code> after importing — SPSS files frequently hide useful info in variable/value labels that's easy to miss.",
+    next:[{label:"Now get an overview of it", next:"a-overview"}]
+  },
+
+  "a-import-qualtrics": { type:"answer", title:"Import a Qualtrics export", pkgs:["readr","here"],
+    explain:"Qualtrics CSV exports have three header rows: variable names, full question text, and an internal ImportId row. You usually want only the first row as your column names.",
+    code:`library(readr)
+library(here)
+
+# grab the real variable names from row 1
+var_names <- read_csv(here("data", "raw", "survey_raw.csv"), n_max = 0) |> names()
+
+# skip the first 3 rows (names, question text, import IDs), reuse var_names
+survey_raw <- read_csv(here("data", "raw", "survey_raw.csv"), skip = 3, col_names = var_names)`,
+    tip:"The qualtRics package is another way around these formatting quirks: use <code>fetch_survey()</code> if you have API access, or <code>read_survey()</code> to read an exported CSV directly — it handles the header rows for you and keeps the question wording as metadata instead of discarding it.",
+    next:[{label:"Now get an overview of it", next:"a-overview"}]
+  },
+
+  /* ---------------- OVERVIEW ---------------- */
+  "a-overview": { type:"answer", title:"Get an overview & spot problems", pkgs:["dplyr","naniar","janitor"],
+    explain:"Always do this before any cleaning — it tells you exactly what needs fixing, rather than guessing.",
+    checklist:[
+      "<b>Wrong variable types</b> — a date or number showing up as <code>&lt;chr&gt;</code> (text), usually caused by a stray character, symbol, or an Excel serial number.",
+      "<b>Column names that aren't meaningful</b> — survey-platform codes like <code>q3</code>, <code>Q7</code>, or <code>SQ001</code> instead of descriptive names.",
+      "<b>Suspicious numeric values</b> that are probably missing-data codes in disguise — things like <code>-99</code>, <code>999</code>, or <code>-1</code> sitting in an otherwise 1-5 range.",
+      "<b>Wide data that needs to be long</b> (or vice versa) — repeated trials or timepoints spread across separate columns instead of stacked into rows for plotting/modeling.",
+      "<b>Extra columns you don't need</b> — survey-platform metadata like IP address, browser info, or progress percentage that came along with the export.",
+      "<b>Columns that are entirely (or almost entirely) missing</b> — often an unused survey question or something that didn't export properly.",
+      "<b>Inconsistent category labels</b> within the same variable — <code>\"Female\"</code>, <code>\"female\"</code>, and <code>\"FEMALE\"</code> being treated as three different groups.",
+      "<b>An unexpected number of rows</b> — more or fewer than you expected can mean a duplicated import, a botched merge, or test/preview responses left in the file.",
+      "<b>Implausible values</b> — ages over 100, ratings outside the scale's range, reaction times of 9999ms — worth a first skim even before the formal validation step later.",
+      "<b>One column doing two jobs</b> — e.g. a single field holding multiple \"select all that apply\" answers separated by commas."
+    ],
+    sections:[
+      { pkg:"dplyr", intro:"glimpse() gives you a compact, column-by-column view of your data: the variable name, its type, and a peek at the first few values. Scan the type column first — that's where dates or numbers hiding as text show up — then scan the values themselves for anything that looks off.",
+        code:`library(dplyr)
+glimpse(survey_raw)` },
+      { pkg:"naniar", intro:"miss_var_summary() ranks every column by how much of it is missing. vis_miss() turns that into a visual grid, so you can see at a glance whether missingness is scattered randomly or concentrated in particular variables or participants — a pattern worth investigating (e.g. everyone who abandoned the survey partway through).",
+        code:`library(naniar)
+miss_var_summary(survey_raw)
+vis_miss(survey_raw)` },
+      { pkg:"janitor", intro:"tabyl() gives you a frequency table for one categorical column — counts and percentages for every value it contains. Use it to catch typo'd or inconsistently capitalized categories, unexpectedly rare or common groups, and missing-data codes turning up as their own \"category.\"",
+        code:`library(janitor)
+survey_raw |> tabyl(gender)` }
+    ],
+    tip:"Re-run glimpse(), vis_miss() and/or tabyl() after each cleaning step, not just at the start — it's the fastest way to confirm a fix actually worked.",
+    next:[
+      {label:"Now clean column names", next:"a-cleannames"},
+      {label:"Now check & convert variable types", next:"q-types"},
+      {label:"Now deal with missing data", next:"q-missing"},
+      {label:"Now reshape wide/long", next:"q-reshape"}
+    ]
+  },
+
+  "a-cleannames": { type:"answer", title:"Clean up messy column names", pkgs:["janitor"],
+    explain:"clean_names() converts column names like \"Participant ID\" or \"Q1_Have you...\" into consistent snake_case (participant_id, q1_have_you) so they're easy and safe to reference in code.",
+    code:`library(janitor)
+
+survey_raw <- survey_raw |> clean_names()
+
+names(survey_raw)`,
+    tip:"Do this <b>immediately after import</b>, before any other cleaning step — every later step depends on knowing the real column names.",
+    next:[
+      {label:"Now rename individual variables", next:"a-rename-individual"},
+      {label:"Now get an overview", next:"a-overview"},
+      {label:"Now deal with missing data", next:"q-missing"}
+    ]
+  },
+
+  /* ---------------- RENAME INDIVIDUAL VARIABLES ---------------- */
+  "a-rename-individual": { type:"answer", title:"Rename individual variables", pkgs:["dplyr"],
+    explain:"clean_names() standardizes formatting, but you'll usually still want clearer names for specific columns — dplyr::rename() takes new_name = old_name pairs. This matters most for survey-platform exports, where columns often arrive named q3, q7, or SQ001.",
+    code:`library(dplyr)
+
+survey_raw <- survey_raw |>
+  rename(
+    participant_age = q3,
+    condition_group  = q7
+  )
+
+# rename many columns at once using a data dictionary (a lookup table)
+name_dictionary <- tibble::tibble(
+  old_name = c("q3", "q7"),
+  new_name = c("participant_age", "condition_group")
+)
+
+survey_raw <- survey_raw |>
+  rename_with(
+    ~ name_dictionary$new_name[match(., name_dictionary$old_name)],
+    .cols = name_dictionary$old_name
+  )`,
+    tip:"Renaming right after clean_names() means every later step in your script can use clear variable names instead of cryptic survey-platform codes like q3 or SQ001.",
+    next:[{label:"Now get an overview", next:"a-overview"}]
+  },
+
+  /* ---------------- VARIABLE TYPES ---------------- */
+  "q-types": { type:"question", text:"What's the variable type problem?", options:[
+    {label:"I just want to check all my variable types", next:"a-types-check"},
+    {label:"A numeric column imported as character (stray text, commas, symbols)", next:"a-types-tonumeric"},
+    {label:"A date column imported as a number (Excel serial date)", next:"a-types-exceldate"},
+    {label:"I want to convert a column to a factor", next:"a-types-tofactor"}
+  ]},
+
+  "a-types-check": { type:"answer", title:"Check your variable types", pkgs:["dplyr"],
+    explain:"A column that should be numeric but shows up as <chr> is one of the most common silent errors in survey data — it usually means at least one row has a stray character in it.",
+    code:`library(dplyr)
+glimpse(survey_raw)   # quick look at every column's type
+
+# or check a single column's class
+class(survey_raw$age)`,
+    tip:"Do this right after import, and again after cleaning — catching a type problem early saves you from confusing downstream errors like a numeric summary refusing to run.",
+    next:[
+      {label:"Fix a character column that should be numeric", next:"a-types-tonumeric"},
+      {label:"Fix an Excel date stored as a number", next:"a-types-exceldate"}
+    ]
+  },
+
+  "a-types-tonumeric": { type:"answer", title:"Convert a character column to numeric", pkgs:["dplyr"],
+    explain:"as.numeric() silently turns anything it can't parse into NA. Before you trust the conversion, check which original values failed — that's usually where the real problem (stray text, a comma, a typo) is hiding.",
+    code:`library(dplyr)
+
+# check which values will fail to convert BEFORE you overwrite the column
+survey_raw |>
+  filter(is.na(as.numeric(age)) & !is.na(age)) |>
+  distinct(age)
+
+survey_raw <- survey_raw |>
+  mutate(age = as.numeric(age))
+
+# check for new NAs introduced by the conversion
+sum(is.na(survey_raw$age))`,
+    tip:"Run the \"which values failed\" check <b>before</b> you overwrite the column, not after — once <code>age</code> has been reassigned, the original text values are gone and you can't see what caused the problem.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-types-exceldate": { type:"answer", title:"Fix an Excel date stored as a number", pkgs:["janitor"],
+    explain:"This shows up when a spreadsheet program stores a date as a serial number (e.g. 45678) instead of text — common after copy-pasting from Excel into a CSV.",
+    code:`library(janitor)
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(start_date = excel_numeric_to_date(as.numeric(start_date)))`,
+    tip:"If some dates parse and others don't, check whether the column is a mix of real dates and Excel serial numbers — a common result of copy-pasting data from two different spreadsheets.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-types-tofactor": { type:"answer", title:"Convert a column to a factor", pkgs:["dplyr"],
+    explain:"Convert grouping/categorical variables (like experimental condition) to factors before modeling — many R modeling functions treat factors differently from plain character columns.",
+    code:`library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(condition = as.factor(condition))
+
+# check the levels
+levels(survey_raw$condition)`,
+    tip:"If the order of levels matters (e.g. \"Low\" &lt; \"Medium\" &lt; \"High\"), set it explicitly with <code>factor(condition, levels = c(\"Low\", \"Medium\", \"High\"))</code> rather than relying on alphabetical order.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- MISSING DATA ---------------- */
+  "q-missing": { type:"question", text:"How are your missing values currently represented?", options:[
+    {label:"Blank cells / already shown as NA", next:"a-missing-decide"},
+    {label:"Coded as numbers (e.g., -99, 999) or text like \"missing\"", next:"a-missing-recode"},
+    {label:"I'm not sure — help me check first", next:"a-missing-check"}
+  ]},
+
+  "a-missing-check": { type:"answer", title:"Check how missingness is coded", pkgs:["naniar","dplyr"],
+    explain:"Psychology surveys often use out-of-range numbers (999, -99, -1) to mean 'missing' rather than a true blank cell. Spotting these before analysis is essential — otherwise R will treat them as real scores.",
+    code:`library(naniar)
+miss_var_summary(survey_raw)   # official NAs per column
+vis_miss(survey_raw)
+
+# eyeball one column's actual values for suspicious codes
+library(dplyr)
+survey_raw |> count(mood_rating)`,
+    tip:"Check your study's codebook — researchers usually document which numeric code means 'missing' for each measure.",
+    next:[
+      {label:"They're already blank/NA", next:"a-missing-decide"},
+      {label:"They're coded as numbers", next:"a-missing-recode"}
+    ]
+  },
+
+  "a-missing-recode": { type:"answer", title:"Convert coded missing values to real NA", pkgs:["naniar"],
+    explain:"naniar's replace_with_na() turns specific values into proper NA, so dplyr/tidyr functions recognise them as missing instead of as real data.",
+    code:`library(naniar)
+
+survey_raw <- survey_raw |>
+  replace_with_na(replace = list(
+    age = c(-99, 999),
+    mood_rating = c(-99)
+  ))
+
+# or apply the same missing code to every column at once
+survey_raw <- survey_raw |>
+  replace_with_na_all(condition = ~ .x %in% c(-99, 999))`,
+    tip:"Keep a note of which codes you replaced — it belongs in your methods write-up, not just your script.",
+    next:[{label:"Now decide what to do about the missing values", next:"a-missing-decide"}]
+  },
+
+  "a-missing-decide": { type:"answer", title:"Decide what to do about missing values", pkgs:["tidyr","dplyr","naniar"],
+    explain:"Once missing values are properly coded as NA, you have a few options depending on your design.",
+    code:`library(tidyr)
+library(dplyr)
+
+# remove rows with ANY missing value
+survey_complete <- survey_raw |> drop_na()
+
+# remove rows missing on specific key variables only
+survey_complete <- survey_raw |> drop_na(age, condition)
+
+# flag participants with a lot of missing data instead of dropping automatically
+library(naniar)
+survey_raw |>
+  mutate(pct_missing = rowMeans(is.na(across(everything()))) * 100) |>
+  filter(pct_missing > 50)`,
+    tip:"Don't drop_na() the whole dataset by default — think about whether missingness is random or meaningful (e.g. someone quit the survey early) before deciding how to handle it.",
+    next:[{label:"Now get a final overview", next:"a-overview"}]
+  },
+
+  /* ---------------- DATES ---------------- */
+  "q-dates": { type:"question", text:"What date or time task do you need?", options:[
+    {label:"Parse a date column (text → real date)", next:"a-date-parse"},
+    {label:"Calculate age from date of birth", next:"a-date-age"},
+    {label:"Calculate survey duration between two timestamps", next:"a-date-duration"},
+    {label:"Extract parts of a date (year, month, weekday)", next:"a-date-extract"}
+  ]},
+
+  "a-date-parse": { type:"answer", title:"Parse a date column", pkgs:["lubridate"],
+    explain:"lubridate's parsing functions are named after the order your dates appear in: y = year, m = month, d = day. Pick the one matching your raw format.",
+    code:`library(lubridate)
+
+survey_raw <- survey_raw |>
+  mutate(start_date = ymd(start_date))     # format: 2026-07-01
+  # mutate(start_date = mdy(start_date))   # format: 07/01/2026
+  # mutate(start_date = dmy(start_date))   # format: 01/07/2026
+  # mutate(start_time = ymd_hms(start_time)) # includes a time stamp
+
+# check nothing failed to parse
+sum(is.na(survey_raw$start_date))`,
+    tip:"A sudden jump in NAs after parsing usually means you picked the wrong order (e.g. used mdy() on day-first dates).",
+    next:[
+      {label:"Now extract year/month/weekday", next:"a-date-extract"},
+      {label:"Now calculate age", next:"a-date-age"}
+    ]
+  },
+
+  "a-date-age": { type:"answer", title:"Calculate age from date of birth", pkgs:["lubridate","dplyr"],
+    explain:"Subtracting dates gives you days, so convert to years using lubridate's time_length() for an accurate result (it accounts for leap years).",
+    code:`library(lubridate)
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(
+    dob = ymd(dob),
+    age_years = time_length(interval(dob, today()), "years")
+  )`,
+    tip:"Round with <code>floor(age_years)</code> if you want age in completed years rather than a decimal.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-date-duration": { type:"answer", title:"Calculate survey duration", pkgs:["lubridate"],
+    explain:"Useful for spotting participants who rushed through (likely low-quality data) or who left the survey open for hours.",
+    code:`library(lubridate)
+
+survey_raw <- survey_raw |>
+  mutate(
+    start_time = ymd_hms(start_time),
+    end_time   = ymd_hms(end_time),
+    duration_mins = time_length(interval(start_time, end_time), "minutes")
+  )`,
+    tip:"Filter out implausible durations as a data-quality check, e.g. <code>filter(duration_mins &lt; 1)</code> for a survey that should take 20+ minutes.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-date-extract": { type:"answer", title:"Extract parts of a date", pkgs:["lubridate","dplyr"],
+    explain:"Handy for grouping participants by data collection wave, or checking for day-of-week effects.",
+    code:`library(lubridate)
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(
+    year    = year(start_date),
+    month   = month(start_date, label = TRUE),
+    weekday = wday(start_date, label = TRUE)
+  )`,
+    tip:"<code>label = TRUE</code> gives you readable labels (\"Jan\", \"Mon\") instead of plain numbers.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- RECODE ---------------- */
+  "q-recode": { type:"question", text:"What kind of recoding do you need?", options:[
+    {label:"Convert coded values to labels (1/2 → Male/Female)", next:"a-recode-labels"},
+    {label:"Reverse-score a Likert item", next:"a-recode-reverse"},
+    {label:"Combine items into a scale score", next:"a-recode-scale"},
+    {label:"Recode based on a condition (e.g. age bands)", next:"a-recode-case-when"}
+  ]},
+
+  "a-recode-labels": { type:"answer", title:"Convert coded values to labels", pkgs:["dplyr"],
+    explain:"case_when() is the modern, recommended way to do this in dplyr (it's clearer with multiple conditions and is now preferred over the older recode() function).",
+    code:`library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(gender = case_when(
+    gender == 1 ~ "Male",
+    gender == 2 ~ "Female",
+    gender == 3 ~ "Nonbinary/other",
+    TRUE ~ NA_character_
+  ))`,
+    tip:"Always include a fallback line (<code>TRUE ~ NA_character_</code>) so unexpected values become a visible NA instead of silently disappearing.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-recode-reverse": { type:"answer", title:"Reverse-score a Likert item", pkgs:["dplyr"],
+    explain:"The general formula for reverse-scoring is: reversed = (scale minimum + scale maximum) − original score.",
+    code:`library(dplyr)
+
+# example: a 1–5 Likert item, so min + max = 6
+survey_raw <- survey_raw |>
+  mutate(item3_r = 6 - item3)`,
+    tip:"Double-check your scale's actual min and max before using this formula — a 0–4 scale uses 4, not 6.",
+    next:[{label:"Now build a scale score", next:"a-recode-scale"}]
+  },
+
+  "a-recode-scale": { type:"answer", title:"Build a scale score from items", pkgs:["dplyr"],
+    explain:"across() lets you average (or sum) several item columns at once into a single total score.",
+    code:`library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(anxiety_total = rowMeans(across(c(item1, item2, item3_r, item4)), na.rm = TRUE))
+
+# or a sum instead of a mean:
+# mutate(anxiety_total = rowSums(across(c(item1, item2, item3_r, item4)), na.rm = TRUE))`,
+    tip:"Reverse-score any relevant items <b>first</b> (previous step) before averaging them into a total — otherwise the scale score will be wrong.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-recode-case-when": { type:"answer", title:"Recode based on a condition", pkgs:["dplyr"],
+    explain:"case_when() evaluates conditions top-to-bottom and uses the first one that matches — great for turning a continuous variable into groups.",
+    code:`library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(age_group = case_when(
+    age < 18 ~ "under 18",
+    age >= 18 & age < 30 ~ "18-29",
+    age >= 30 & age < 50 ~ "30-49",
+    age >= 50 ~ "50+",
+    TRUE ~ NA_character_
+  ))`,
+    tip:"Order matters — case_when() stops at the first TRUE condition, so put more specific rules earlier.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- RESHAPE ---------------- */
+  "q-reshape": { type:"question", text:"Which direction do you need to reshape?", options:[
+    {label:"Wide to long (e.g. trial1, trial2, trial3 → one 'trial' column)", next:"a-reshape-long"},
+    {label:"Long to wide (one row per trial → one row per participant)", next:"a-reshape-wide"}
+  ]},
+
+  "a-reshape-long": { type:"answer", title:"Reshape wide to long", pkgs:["tidyr"],
+    explain:"Long format — one row per observation — is what most repeated-measures ANOVAs and mixed-effects models in R expect.",
+    code:`library(tidyr)
+
+survey_long <- survey_raw |>
+  pivot_longer(
+    cols = starts_with("trial"),
+    names_to = "trial",
+    values_to = "rt"
+  )`,
+    tip:"<code>cols</code> accepts helpers like <code>starts_with()</code>, <code>contains()</code>, or just a plain vector of column names.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-reshape-wide": { type:"answer", title:"Reshape long to wide", pkgs:["tidyr"],
+    explain:"Useful when you need one row per participant for a correlation matrix or a simple summary table.",
+    code:`library(tidyr)
+
+survey_wide <- survey_long |>
+  pivot_wider(
+    names_from = trial,
+    values_from = rt
+  )`,
+    tip:"pivot_wider() and pivot_longer() are exact inverses — if something looks wrong, try reversing the operation to see where it breaks.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- FILTER / INCLUSION & EXCLUSION ---------------- */
+  "q-filter": { type:"question", text:"What kind of criteria are you applying?", options:[
+    {label:"Keep only participants who meet inclusion criteria", next:"a-filter-keep"},
+    {label:"Drop participants who meet exclusion criteria", next:"a-filter-out"},
+    {label:"Both — apply a full inclusion/exclusion checklist", next:"a-filter-both"}
+  ]},
+
+  "a-filter-keep": { type:"answer", title:"Filter rows to keep — inclusion criteria", pkgs:["dplyr"],
+    explain:"Use filter() when you can describe who you want to KEEP. Watch out: filter() treats NA like FALSE, so rows with a missing value on your filtering variable get silently dropped too — not just the rows that truly fail the criteria.",
+    code:`library(dplyr)
+
+# keep only participants who consented and are 18+
+survey_raw <- survey_raw |>
+  filter(consent == "Yes", age >= 18)`,
+    tip:"Because filter() drops NA rows on the condition, always compare <code>nrow()</code> before and after, and check whether anyone was dropped only because of a missing value rather than truly failing the criteria.",
+    next:[
+      {label:"See the drop-focused version (filter_out)", next:"a-filter-out"},
+      {label:"Now check your data is clean", next:"a-validate"}
+    ]
+  },
+
+  "a-filter-out": { type:"answer", title:"Filter rows out — exclusion criteria", pkgs:["dplyr"],
+    explain:"filter_out(), added in dplyr 1.2.0, is the companion to filter() built specifically for describing who you want to REMOVE. Unlike a negated filter() (using !condition), filter_out() treats NA like FALSE too — so participants with a missing value on your exclusion variable are correctly kept rather than accidentally dropped. Requires dplyr 1.2.0 or later (<code>packageVersion(\"dplyr\")</code> to check).",
+    code:`library(dplyr)
+
+# drop anyone who withdrew consent, or failed the attention check
+survey_raw <- survey_raw |>
+  filter_out(consent == "Withdrew", attention_check == "Failed")
+
+# compare: the old, error-prone way to write the same thing with filter()
+# survey_raw |> filter(!(consent == "Withdrew" & attention_check == "Failed"))
+# ...that version silently mishandles any row with an NA in either column`,
+    tip:"Reach for filter_out() any time you catch yourself writing <code>!=</code> or wrapping a condition in <code>!( )</code> to describe who to exclude — that's exactly the pattern it replaces.",
+    next:[
+      {label:"See the keep-focused version (filter)", next:"a-filter-keep"},
+      {label:"Now check your data is clean", next:"a-validate"}
+    ]
+  },
+
+  "a-filter-both": { type:"answer", title:"Apply a full inclusion/exclusion checklist", pkgs:["dplyr"],
+    explain:"Most studies apply both at once — keep the eligible, then drop the excluded. Doing this as two explicit steps (rather than one long condition) keeps your criteria easy to read back later, e.g. when writing a participant-flow paragraph for a methods section.",
+    code:`library(dplyr)
+
+n_start <- nrow(survey_raw)
+
+survey_raw <- survey_raw |>
+  # inclusion: keep only eligible participants
+  filter(consent == "Yes", age >= 18) |>
+  # exclusion: drop anyone who should be removed even if eligible
+  filter_out(attention_check == "Failed", duplicate_flag == TRUE)
+
+n_end <- nrow(survey_raw)
+n_start - n_end   # how many participants were removed`,
+    tip:"Keep a running count like <code>n_start</code>/<code>n_end</code> for every inclusion/exclusion step — it's exactly the number you'll need for a CONSORT-style participant flow description.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- DUPLICATES ---------------- */
+  "a-duplicates": { type:"answer", title:"Find or remove duplicate responses", pkgs:["janitor","dplyr"],
+    explain:"Duplicate participant IDs can mean a participant submitted twice, a data entry error, or sometimes a genuine repeated-measures row — check before deleting.",
+    code:`library(janitor)
+
+# see the actual duplicate rows
+survey_raw |> get_dupes(participant_id)
+
+library(dplyr)
+# keep only the first occurrence of each ID
+survey_raw <- survey_raw |> distinct(participant_id, .keep_all = TRUE)`,
+    tip:"Investigate <i>why</i> a duplicate exists before deleting it — it might be a legitimate second session, not an error.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- COMBINE ---------------- */
+  "q-combine": { type:"question", text:"How do you need to combine your files?", options:[
+    {label:"Stack files with the same columns (e.g. separate batches/sessions)", next:"a-combine-bind"},
+    {label:"Merge files that share a participant ID but have different columns", next:"a-combine-join"}
+  ]},
+
+  "a-combine-bind": { type:"answer", title:"Stack files with matching columns", pkgs:["readr","dplyr","here"],
+    explain:"bind_rows() stacks data frames on top of each other, matching by column name (filling any column that's missing in one file with NA).",
+    code:`library(readr)
+library(dplyr)
+library(here)
+
+batch1 <- read_csv(here("data", "raw", "batch1.csv"))
+batch2 <- read_csv(here("data", "raw", "batch2.csv"))
+
+all_data <- bind_rows(batch1, batch2)`,
+    tip:"Run <code>clean_names()</code> on each file first — bind_rows() matches by exact column name, so inconsistent naming will create extra columns instead of an error.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  "a-combine-join": { type:"answer", title:"Merge files by participant ID", pkgs:["dplyr","here"],
+    explain:"left_join() keeps every row from your first (left) dataset and attaches matching columns from the second wherever the ID matches.",
+    code:`library(dplyr)
+library(here)
+
+demographics   <- read_csv(here("data", "raw", "demographics.csv"))
+survey_scores  <- read_csv(here("data", "raw", "survey_scores.csv"))
+
+full_data <- left_join(demographics, survey_scores, by = "participant_id")
+
+# check for participants that didn't find a match
+full_data |> filter(is.na(survey_score))`,
+    tip:"If row counts look wrong after joining, check for duplicate IDs in either file first — they cause joins to multiply rows unexpectedly.",
+    next:[{label:"Now check your data is clean", next:"a-validate"}]
+  },
+
+  /* ---------------- VALIDATE ---------------- */
+  "a-validate": { type:"answer", title:"Check your data is actually clean", pkgs:["dplyr","janitor","naniar"],
+    explain:"A short checklist to re-run every time you update your cleaning script, before you trust the data enough to analyse it.",
+    code:`library(dplyr)
+
+# range checks — anything outside a plausible range?
+survey_raw |> filter(age < 0 | age > 100)
+survey_raw |> filter(if_any(starts_with("item"), ~ . < 1 | . > 5))
+
+# unique participant IDs?
+library(janitor)
+survey_raw |> get_dupes(participant_id)
+
+# any missingness left unaccounted for?
+library(naniar)
+vis_miss(survey_raw)`,
+    tip:"Save these checks as their own short script — re-running it every time you touch the raw data catches problems early.",
+    next:[{label:"Now save the clean data", next:"a-export"}]
+  },
+
+  /* ---------------- EXPORT ---------------- */
+  "a-export": { type:"answer", title:"Save your clean data reproducibly", pkgs:["readr","here"],
+    explain:"survey_raw has been modified in place at every step so far — this is the one point where it gets a new name. Calling it survey_clean here marks it as finished: ready for analysis, not to be edited by hand. The goal of reproducible cleaning is that you could delete survey_clean.csv entirely and regenerate it perfectly by re-running your script.",
+    code:`library(readr)
+library(here)
+
+survey_clean <- survey_raw
+
+write_csv(survey_clean, here("data", "clean", "survey_clean.csv"))`,
+    tip:"Never hand-edit survey_clean.csv. If you spot an error, fix it in the cleaning script and re-run the whole thing from the raw file. Keeping raw and clean files in separate folders (data/raw/ vs data/clean/) makes it obvious at a glance which file is safe to overwrite.",
+    next:[]
+  }
+};
+
+/* category map for quick-jump grid — question is a short preview of what you'll be asked or shown */
+const mapCategories = [
+  {ico:"🗂️", label:"Set up project", question:"How do I set up my project folder?", next:"a-project-setup"},
+  {ico:"📥", label:"Import data", question:"What kind of file are you importing?", next:"q-import"},
+  {ico:"🔍", label:"Overview & problems", question:"How do I get an overview of my data?", next:"a-overview"},
+  {ico:"🏷️", label:"Clean column names", question:"How do I clean up messy column names?", next:"a-cleannames"},
+  {ico:"✏️", label:"Rename variables", question:"How do I rename individual variables?", next:"a-rename-individual"},
+  {ico:"🔡", label:"Variable types", question:"What's the variable type problem?", next:"q-types"},
+  {ico:"🕳️", label:"Missing data", question:"How are your missing values represented?", next:"q-missing"},
+  {ico:"📅", label:"Dates & durations", question:"What date or time task do you need?", next:"q-dates"},
+  {ico:"🔢", label:"Recode & scale scores", question:"What kind of recoding do you need?", next:"q-recode"},
+  {ico:"↔️", label:"Reshape wide/long", question:"Which direction do you need to reshape?", next:"q-reshape"},
+  {ico:"🚦", label:"Inclusion/exclusion", question:"What kind of criteria are you applying?", next:"q-filter"},
+  {ico:"👥", label:"Duplicates", question:"How do I find or remove duplicates?", next:"a-duplicates"},
+  {ico:"🔗", label:"Combine files", question:"How do you need to combine your files?", next:"q-combine"},
+  {ico:"✅", label:"Validate", question:"How do I check my data is actually clean?", next:"a-validate"},
+  {ico:"💾", label:"Save / export", question:"How do I save my clean data reproducibly?", next:"a-export"}
+];
+
+let historyStack = [];
+
+function escapeHtml(str){
+  return str.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+}
+
+function highlightCode(code){
+  // minimal highlighting: comments in muted color
+  return escapeHtml(code).split("\n").map(line=>{
+    const idx = line.indexOf("#");
+    if(idx !== -1){
+      return line.slice(0,idx) + '<span class="comment">' + line.slice(idx) + '</span>';
+    }
+    return line;
+  }).join("\n");
+}
+
+function checklistHtml(node){
+  if(!node.checklist) return "";
+  return `
+    <details class="checklist-box">
+      <summary class="checklist-title">What kind of problems are you looking for?</summary>
+      <ul>${node.checklist.map(c => `<li>${c}</li>`).join("")}</ul>
+    </details>
+  `;
+}
+
+function codeSectionsHtml(node){
+  if(node.sections){
+    return node.sections.map(s => `
+      <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code>${highlightCode(s.code)}</code></pre>
+      </div>
+      <p class="a-explain">${s.intro}</p>
+    `).join("");
+  }
+  return `
+    <div class="code-block">
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      <pre><code>${highlightCode(node.code)}</code></pre>
+    </div>
+  `;
+}
+
+function renderBreadcrumbs(){
+  const el = document.getElementById("breadcrumbs");
+  if(historyStack.length <= 1){ el.innerHTML = ""; return; }
+  let html = "";
+  historyStack.forEach((id, i)=>{
+    const n = nodes[id];
+    const label = n.type === "question" ? n.text : n.title;
+    const short = label.length > 28 ? label.slice(0,28)+"…" : label;
+    if(i > 0) html += '<span class="sep">›</span>';
+    if(i === historyStack.length - 1){
+      html += '<span>' + escapeHtml(short) + '</span>';
+    } else {
+      html += '<button onclick="goTo(' + i + ')">' + escapeHtml(short) + '</button>';
+    }
+  });
+  html += ' <button onclick="resetTree()" style="margin-left:8px;color:#7a5a94;">↺ start over</button>';
+  el.innerHTML = html;
+}
+
+function goTo(index){
+  historyStack = historyStack.slice(0, index+1);
+  renderCard();
+}
+
+function resetTree(){
+  historyStack = [];
+  renderCard();
+}
+
+function navigate(nextId){
+  historyStack.push(nextId);
+  renderCard();
+  document.getElementById("cardArea").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function jumpTo(nextId){
+  historyStack = [nextId];
+  renderCard();
+}
+
+function renderCard(){
+  const el = document.getElementById("cardArea");
+  renderBreadcrumbs();
+
+  if(historyStack.length === 0){
+    el.innerHTML = `
+      <div class="q-eyebrow">Get started</div>
+      <p class="q-text">Ready when you are.</p>
+      <div class="opt-list">
+        <button class="opt-btn" onclick="navigate('a-project-setup')">Start from the beginning <span class="arrow">→</span></button>
+      </div>
+      <p class="a-explain" style="margin-top:14px;">...or pick any task from the map above — whatever matches what you're stuck on right now.</p>
+    `;
+    return;
+  }
+
+  const id = historyStack[historyStack.length-1];
+  const node = nodes[id];
+
+  if(node.type === "question"){
+    el.innerHTML = `
+      <div class="q-eyebrow">Question</div>
+      <p class="q-text">${escapeHtml(node.text)}</p>
+      <div class="opt-list">
+        ${node.options.map(o => `<button class="opt-btn" onclick="navigate('${o.next}')">${escapeHtml(o.label)} <span class="arrow">→</span></button>`).join("")}
+      </div>
+      <div class="nav-row">
+        <button class="ghost-btn" onclick="goTo(${historyStack.length-2})">← Back</button>
+        <button class="ghost-btn" onclick="resetTree()">↺ Start over</button>
+      </div>
+    `;
+  } else {
+    const nextHtml = (node.next && node.next.length)
+      ? `<div class="next-label">Where to next</div>
+         <div class="opt-list">
+           ${node.next.map(o => `<button class="opt-btn" onclick="navigate('${o.next}')">${escapeHtml(o.label)} <span class="arrow">→</span></button>`).join("")}
+         </div>`
+      : `<div class="tip-box"><b>Done.</b> That's the end of this path — your data should now be ready to analyse.</div>`;
+
+    el.innerHTML = `
+      <div class="a-eyebrow">Answer</div>
+      <h3 class="a-title">${escapeHtml(node.title)}</h3>
+      <div class="pkg-tags">${node.pkgs.map(p=>`<span class="pkg-tag">${p}</span>`).join("")}</div>
+      <p class="a-explain">${node.explain}</p>
+      ${codeSectionsHtml(node)}
+      <div class="tip-box"><b>Tip:</b> ${node.tip}</div>
+      ${checklistHtml(node)}
+      ${nextHtml}
+      <div class="nav-row">
+        <button class="ghost-btn" onclick="goTo(${historyStack.length-2})">← Back</button>
+        <button class="ghost-btn" onclick="resetTree()">↺ Start over</button>
+      </div>
+    `;
+  }
+}
+
+function copyCode(btn){
+  const code = btn.parentElement.querySelector("code").innerText;
+  navigator.clipboard.writeText(code).then(()=>{
+    const old = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(()=> btn.textContent = old, 1400);
+  });
+}
+
+function buildMap(){
+  const grid = document.getElementById("mapGrid");
+  grid.innerHTML = mapCategories.map(c =>
+    `<button class="map-chip" onclick="jumpTo('${c.next}')">
+       <span class="ico">${c.ico}</span>
+       <span class="chip-text">
+         <span class="lbl">${escapeHtml(c.label)}</span>
+         <span class="sub">${escapeHtml(c.question)}</span>
+       </span>
+     </button>`
+  ).join("");
+}
+
+/* ---------------- Quick reference (flat) view ---------------- */
+const refGroups = [
+  {title:"Project setup", ids:["a-project-setup"]},
+  {title:"Import", ids:["a-import-csv","a-import-excel","a-import-spss","a-import-qualtrics"]},
+  {title:"Overview & names", ids:["a-overview","a-cleannames","a-rename-individual"]},
+  {title:"Variable types", ids:["a-types-check","a-types-tonumeric","a-types-exceldate","a-types-tofactor"]},
+  {title:"Missing data", ids:["a-missing-check","a-missing-recode","a-missing-decide"]},
+  {title:"Dates & durations", ids:["a-date-parse","a-date-age","a-date-duration","a-date-extract"]},
+  {title:"Recoding & scoring", ids:["a-recode-labels","a-recode-reverse","a-recode-scale","a-recode-case-when"]},
+  {title:"Reshaping", ids:["a-reshape-long","a-reshape-wide"]},
+  {title:"Inclusion & exclusion (filtering)", ids:["a-filter-keep","a-filter-out","a-filter-both"]},
+  {title:"Duplicates & combining files", ids:["a-duplicates","a-combine-bind","a-combine-join"]},
+  {title:"Validate & export", ids:["a-validate","a-export"]}
+];
+
+function buildRef(){
+  const el = document.getElementById("refList");
+  el.innerHTML = refGroups.map(g => `
+    <div class="ref-group" data-group>
+      <h3>${g.title}</h3>
+      ${g.ids.map(id => {
+        const n = nodes[id];
+        return `<div class="ref-item" data-search="${escapeHtml((n.title + " " + n.explain + " " + n.code).toLowerCase())}">
+          <div class="ref-item-title">${escapeHtml(n.title)}</div>
+          <div class="pkg-tags">${n.pkgs.map(p=>`<span class="pkg-tag">${p}</span>`).join("")}</div>
+          <p class="a-explain">${n.explain}</p>
+          ${codeSectionsHtml(n)}
+          <div class="tip-box"><b>Tip:</b> ${n.tip}</div>
+          ${checklistHtml(n)}
+        </div>`;
+      }).join("")}
+    </div>
+  `).join("");
+}
+
+document.getElementById("refSearch").addEventListener("input", function(){
+  const q = this.value.trim().toLowerCase();
+  document.querySelectorAll(".ref-item").forEach(item=>{
+    item.style.display = item.dataset.search.includes(q) ? "" : "none";
+  });
+  document.querySelectorAll("[data-group]").forEach(group=>{
+    const anyVisible = Array.from(group.querySelectorAll(".ref-item")).some(i => i.style.display !== "none");
+    group.style.display = anyVisible ? "" : "none";
+  });
+});
+
+function showView(view){
+  document.getElementById("tabTree").classList.toggle("active", view==="tree");
+  document.getElementById("tabRef").classList.toggle("active", view==="ref");
+  document.getElementById("treePanel").classList.toggle("active", view==="tree");
+  document.getElementById("refPanel").classList.toggle("active", view==="ref");
+}
+
+buildMap();
+buildRef();
+renderCard();
+</script>
+</body>
+</html>
