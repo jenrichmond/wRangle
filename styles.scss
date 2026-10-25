@@ -1,0 +1,95 @@
+/*-- scss:defaults --*/
+// Colours carried over from the original interactive tool
+$purple:        #5c3e70;
+$purple-dark:   #402c50;
+$purple-pale:   #ede1f5;
+$green:         #1c6b57;
+$green-pale:    #e1f5ea;
+$lilac:         #8a5ca8;
+$lilac-pale:    #f1e9f8;
+$border-col:    #e6d9f0;
+
+$body-bg:       #fdfbfe;
+$body-color:    #3a2a46;
+$primary:       $purple;
+$link-color:    $purple;
+$headings-color: $purple-dark;
+$font-family-sans-serif: "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+$code-color:    $purple-dark;
+$code-bg:       $purple-pale;
+$sidebar-bg:    #f8f3fc;
+$callout-color-tip:  $lilac;
+$callout-color-note: $green;
+
+/*-- scss:rules --*/
+div.sourceCode {
+  background-color: #002240;
+  border: none;
+  border-radius: 10px;
+}
+div.sourceCode pre { color: #ffffff; }
+.code-copy-button { color: #80ffbb !important; }
+
+// "Packages:" line under each heading
+.pkgs {
+  font-size: 0.85rem;
+  color: #6e5b7c;
+  margin-bottom: 0.75rem;
+  code {
+    background: $green-pale;
+    color: $green;
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+}
+
+// The decision question at the top of a chapter
+.question {
+  background: $purple-pale;
+  border-left: 4px solid $purple;
+  border-radius: 10px;
+  padding: 0.9rem 1.2rem;
+  margin: 1rem 0 2rem;
+  p { margin-bottom: 0.4rem; font-size: 1.05rem; }
+  ul { margin-bottom: 0; }
+}
+
+// "Where to next" links at the end of each section
+.next-steps {
+  border-top: 1px solid $border-col;
+  padding-top: 0.8rem;
+  margin: 1.2rem 0 2.5rem;
+  font-size: 0.92rem;
+  ul { margin-bottom: 0; }
+}
+
+// Home page
+.badge-row code {
+  background: $green-pale;
+  color: $green;
+  border-radius: 999px;
+  padding: 3px 9px;
+  margin-right: 4px;
+  font-size: 0.78rem;
+}
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 1rem 0 2rem;
+  p { display: contents; }
+}
+a.map-chip {
+  display: block;
+  background: #fff;
+  border: 1px solid $border-col;
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: $body-color;
+  text-decoration: none;
+  box-shadow: 0 2px 10px rgba(70, 40, 90, 0.08);
+  transition: transform .12s ease, border-color .12s ease;
+  &:hover { transform: translateY(-2px); border-color: $purple; }
+  .sub { font-size: 0.82rem; color: #6e5b7c; }
+}
+.small-print { font-size: 0.82rem; color: #6e5b7c; }

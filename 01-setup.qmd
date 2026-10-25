@@ -1,0 +1,44 @@
+# Set up your project {#sec-project-setup}
+
+::: {.pkgs}
+Packages: `here`
+:::
+
+Before you write a single line of cleaning code, set up a proper R Project with separate folders for raw and clean data. This keeps your original raw file safe from being overwritten, and — combined with the here package — means your file paths work on any computer, not just yours.
+
+```r
+# In RStudio: File > New Project > New Directory > New Project
+# This creates a .Rproj file at your project's root folder
+
+# Project folder structure:
+#
+# my_project/
+# |-- my_project.Rproj
+# |-- data/
+# |   |-- raw/      <- original files, never edited by hand
+# |   `-- clean/    <- outputs from your cleaning script
+# `-- scripts/
+#     `-- 01_clean_data.R
+
+# Inside that project, create the data folders (once):
+dir.create("data/raw", recursive = TRUE)
+dir.create("data/clean", recursive = TRUE)
+
+# Install the here package once
+install.packages("here")
+library(here)
+
+# here() builds a path from your project's root, no matter which
+# sub-folder your script lives in or who runs it
+here("data", "raw", "survey_raw.csv")
+```
+
+::: {.callout-tip}
+Never hard-code a full file path like `"C:/Users/Jen/Desktop/survey.csv"` — it will break on anyone else's computer (including future-you on a new laptop). `here()` builds paths relative to your project's root folder instead, so the same script runs anywhere.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now import my raw data file](02-import.qmd)
+:::

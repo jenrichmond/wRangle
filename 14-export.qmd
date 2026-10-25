@@ -1,0 +1,24 @@
+# Save your clean data {#sec-export}
+
+::: {.pkgs}
+Packages: `readr` `here`
+:::
+
+survey_raw has been modified in place at every step so far — this is the one point where it gets a new name. Calling it survey_clean here marks it as finished: ready for analysis, not to be edited by hand. The goal of reproducible cleaning is that you could delete survey_clean.csv entirely and regenerate it perfectly by re-running your script.
+
+```r
+library(readr)
+library(here)
+
+survey_clean <- survey_raw
+
+write_csv(survey_clean, here("data", "clean", "survey_clean.csv"))
+```
+
+::: {.callout-tip}
+Never hand-edit survey_clean.csv. If you spot an error, fix it in the cleaning script and re-run the whole thing from the raw file. Keeping raw and clean files in separate folders (data/raw/ vs data/clean/) makes it obvious at a glance which file is safe to overwrite.
+:::
+
+::: {.next-steps}
+**Done.** That's the end of this path — your data should now be ready to analyse.
+:::

@@ -1,0 +1,105 @@
+# Missing data
+
+::: {.question}
+**How are your missing values currently represented?**
+
+- [Blank cells / already shown as NA](06-missing.qmd#sec-missing-decide)
+- [Coded as numbers (e.g., -99, 999) or text like "missing"](06-missing.qmd#sec-missing-recode)
+- [I'm not sure — help me check first](06-missing.qmd#sec-missing-check)
+:::
+
+## Check how missingness is coded {#sec-missing-check}
+
+::: {.pkgs}
+Packages: `naniar` `dplyr`
+:::
+
+Psychology surveys often use out-of-range numbers (999, -99, -1) to mean 'missing' rather than a true blank cell. Spotting these before analysis is essential — otherwise R will treat them as real scores.
+
+```r
+library(naniar)
+miss_var_summary(survey_raw)   # official NAs per column
+vis_miss(survey_raw)
+
+# eyeball one column's actual values for suspicious codes
+library(dplyr)
+survey_raw |> count(mood_rating)
+```
+
+::: {.callout-tip}
+Check your study's codebook — researchers usually document which numeric code means 'missing' for each measure.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [They're already blank/NA](06-missing.qmd#sec-missing-decide)
+- [They're coded as numbers](06-missing.qmd#sec-missing-recode)
+:::
+
+## Convert coded missing values to real NA {#sec-missing-recode}
+
+::: {.pkgs}
+Packages: `naniar`
+:::
+
+naniar's replace_with_na() turns specific values into proper NA, so dplyr/tidyr functions recognise them as missing instead of as real data.
+
+```r
+library(naniar)
+
+survey_raw <- survey_raw |>
+  replace_with_na(replace = list(
+    age = c(-99, 999),
+    mood_rating = c(-99)
+  ))
+
+# or apply the same missing code to every column at once
+survey_raw <- survey_raw |>
+  replace_with_na_all(condition = ~ .x %in% c(-99, 999))
+```
+
+::: {.callout-tip}
+Keep a note of which codes you replaced — it belongs in your methods write-up, not just your script.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now decide what to do about the missing values](06-missing.qmd#sec-missing-decide)
+:::
+
+## Decide what to do about missing values {#sec-missing-decide}
+
+::: {.pkgs}
+Packages: `tidyr` `dplyr` `naniar`
+:::
+
+Once missing values are properly coded as NA, you have a few options depending on your design.
+
+```r
+library(tidyr)
+library(dplyr)
+
+# remove rows with ANY missing value
+survey_complete <- survey_raw |> drop_na()
+
+# remove rows missing on specific key variables only
+survey_complete <- survey_raw |> drop_na(age, condition)
+
+# flag participants with a lot of missing data instead of dropping automatically
+library(naniar)
+survey_raw |>
+  mutate(pct_missing = rowMeans(is.na(across(everything()))) * 100) |>
+  filter(pct_missing > 50)
+```
+
+::: {.callout-tip}
+Don't drop_na() the whole dataset by default — think about whether missingness is random or meaningful (e.g. someone quit the survey early) before deciding how to handle it.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now get a final overview](03-overview.qmd#sec-overview)
+:::

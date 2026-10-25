@@ -1,0 +1,69 @@
+# Clean & rename columns
+
+## Clean up messy column names {#sec-cleannames}
+
+::: {.pkgs}
+Packages: `janitor`
+:::
+
+clean_names() converts column names like "Participant ID" or "Q1_Have you..." into consistent snake_case (participant_id, q1_have_you) so they're easy and safe to reference in code.
+
+```r
+library(janitor)
+
+survey_raw <- survey_raw |> clean_names()
+
+names(survey_raw)
+```
+
+::: {.callout-tip}
+Do this **immediately after import**, before any other cleaning step — every later step depends on knowing the real column names.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now rename individual variables](04-names.qmd#sec-rename-individual)
+- [Now get an overview](03-overview.qmd#sec-overview)
+- [Now deal with missing data](06-missing.qmd)
+:::
+
+## Rename individual variables {#sec-rename-individual}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+clean_names() standardizes formatting, but you'll usually still want clearer names for specific columns — dplyr::rename() takes new_name = old_name pairs. This matters most for survey-platform exports, where columns often arrive named q3, q7, or SQ001.
+
+```r
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  rename(
+    participant_age = q3,
+    condition_group  = q7
+  )
+
+# rename many columns at once using a data dictionary (a lookup table)
+name_dictionary <- tibble::tibble(
+  old_name = c("q3", "q7"),
+  new_name = c("participant_age", "condition_group")
+)
+
+survey_raw <- survey_raw |>
+  rename_with(
+    ~ name_dictionary$new_name[match(., name_dictionary$old_name)],
+    .cols = name_dictionary$old_name
+  )
+```
+
+::: {.callout-tip}
+Renaming right after clean_names() means every later step in your script can use clear variable names instead of cryptic survey-platform codes like q3 or SQ001.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now get an overview](03-overview.qmd#sec-overview)
+:::

@@ -1,0 +1,63 @@
+# Get an overview & spot problems {#sec-overview}
+
+::: {.pkgs}
+Packages: `dplyr` `naniar` `janitor`
+:::
+
+Always do this before any cleaning — it tells you exactly what needs fixing, rather than guessing.
+
+## dplyr
+
+glimpse() gives you a compact, column-by-column view of your data: the variable name, its type, and a peek at the first few values. Scan the type column first — that's where dates or numbers hiding as text show up — then scan the values themselves for anything that looks off.
+
+```r
+library(dplyr)
+glimpse(survey_raw)
+```
+
+## naniar
+
+miss_var_summary() ranks every column by how much of it is missing. vis_miss() turns that into a visual grid, so you can see at a glance whether missingness is scattered randomly or concentrated in particular variables or participants — a pattern worth investigating (e.g. everyone who abandoned the survey partway through).
+
+```r
+library(naniar)
+miss_var_summary(survey_raw)
+vis_miss(survey_raw)
+```
+
+## janitor
+
+tabyl() gives you a frequency table for one categorical column — counts and percentages for every value it contains. Use it to catch typo'd or inconsistently capitalized categories, unexpectedly rare or common groups, and missing-data codes turning up as their own "category."
+
+```r
+library(janitor)
+survey_raw |> tabyl(gender)
+```
+
+::: {.callout-tip}
+Re-run glimpse(), vis_miss() and/or tabyl() after each cleaning step, not just at the start — it's the fastest way to confirm a fix actually worked.
+:::
+
+::: {.callout-note collapse="true"}
+## What kind of problems are you looking for?
+
+- **Wrong variable types** — a date or number showing up as `<chr>` (text), usually caused by a stray character, symbol, or an Excel serial number.
+- **Column names that aren't meaningful** — survey-platform codes like `q3`, `Q7`, or `SQ001` instead of descriptive names.
+- **Suspicious numeric values** that are probably missing-data codes in disguise — things like `-99`, `999`, or `-1` sitting in an otherwise 1-5 range.
+- **Wide data that needs to be long** (or vice versa) — repeated trials or timepoints spread across separate columns instead of stacked into rows for plotting/modeling.
+- **Extra columns you don't need** — survey-platform metadata like IP address, browser info, or progress percentage that came along with the export.
+- **Columns that are entirely (or almost entirely) missing** — often an unused survey question or something that didn't export properly.
+- **Inconsistent category labels** within the same variable — `"Female"`, `"female"`, and `"FEMALE"` being treated as three different groups.
+- **An unexpected number of rows** — more or fewer than you expected can mean a duplicated import, a botched merge, or test/preview responses left in the file.
+- **Implausible values** — ages over 100, ratings outside the scale's range, reaction times of 9999ms — worth a first skim even before the formal validation step later.
+- **One column doing two jobs** — e.g. a single field holding multiple "select all that apply" answers separated by commas.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now clean column names](04-names.qmd#sec-cleannames)
+- [Now check & convert variable types](05-types.qmd)
+- [Now deal with missing data](06-missing.qmd)
+- [Now reshape wide/long](09-reshape.qmd)
+:::

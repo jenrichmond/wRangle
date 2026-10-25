@@ -1,0 +1,120 @@
+# Import your data
+
+::: {.question}
+**What kind of file are you importing?**
+
+- [A .csv file](02-import.qmd#sec-import-csv)
+- [An Excel file (.xlsx)](02-import.qmd#sec-import-excel)
+- [An SPSS file (.sav)](02-import.qmd#sec-import-spss)
+- [A Qualtrics export](02-import.qmd#sec-import-qualtrics)
+:::
+
+## Import a CSV file {#sec-import-csv}
+
+::: {.pkgs}
+Packages: `readr` `here`
+:::
+
+read_csv() guesses each column's type from the data and is far more predictable than base R's read.csv(). Wrapping the file path in here() means this works whether you run it from a script, a notebook, or someone else's computer.
+
+```r
+library(readr)
+library(here)
+
+survey_raw <- read_csv(here("data", "raw", "survey_raw.csv"))
+
+# check for anything readr couldn't parse cleanly
+problems(survey_raw)
+```
+
+::: {.callout-tip}
+Always read into a **new** object (survey_raw) and never edit the CSV by hand. Treat the raw file as untouchable — that's why it lives in data/raw/.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now get an overview of it](03-overview.qmd#sec-overview)
+:::
+
+## Import an Excel file {#sec-import-excel}
+
+::: {.pkgs}
+Packages: `readxl` `here`
+:::
+
+readxl is part of the wider tidyverse family and pairs naturally with read_csv() — same idea, for .xlsx files.
+
+```r
+library(readxl)
+library(here)
+
+survey_raw <- read_excel(here("data", "raw", "survey_raw.xlsx"), sheet = 1)
+```
+
+::: {.callout-tip}
+If your spreadsheet has extra title rows above the real header, add `skip = n` to skip them.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now get an overview of it](03-overview.qmd#sec-overview)
+:::
+
+## Import an SPSS (.sav) file {#sec-import-spss}
+
+::: {.pkgs}
+Packages: `haven` `here`
+:::
+
+haven is the tidyverse-adjacent package for reading SPSS/Stata/SAS files. SPSS files often store labelled values (e.g. 1 = 'Male') as a special haven_labelled type, which you'll usually want to convert.
+
+```r
+library(haven)
+library(here)
+
+survey_raw <- read_sav(here("data", "raw", "survey_raw.sav"))
+
+# turn value labels into a proper R factor
+survey_raw <- survey_raw |> as_factor()
+```
+
+::: {.callout-tip}
+Run `str(survey_raw)` after importing — SPSS files frequently hide useful info in variable/value labels that's easy to miss.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now get an overview of it](03-overview.qmd#sec-overview)
+:::
+
+## Import a Qualtrics export {#sec-import-qualtrics}
+
+::: {.pkgs}
+Packages: `readr` `here`
+:::
+
+Qualtrics CSV exports have three header rows: variable names, full question text, and an internal ImportId row. You usually want only the first row as your column names.
+
+```r
+library(readr)
+library(here)
+
+# grab the real variable names from row 1
+var_names <- read_csv(here("data", "raw", "survey_raw.csv"), n_max = 0) |> names()
+
+# skip the first 3 rows (names, question text, import IDs), reuse var_names
+survey_raw <- read_csv(here("data", "raw", "survey_raw.csv"), skip = 3, col_names = var_names)
+```
+
+::: {.callout-tip}
+The qualtRics package is another way around these formatting quirks: use `fetch_survey()` if you have API access, or `read_survey()` to read an exported CSV directly — it handles the header rows for you and keeps the question wording as metadata instead of discarding it.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now get an overview of it](03-overview.qmd#sec-overview)
+:::

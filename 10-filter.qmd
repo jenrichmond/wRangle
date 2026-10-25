@@ -1,0 +1,100 @@
+# Inclusion & exclusion
+
+::: {.question}
+**What kind of criteria are you applying?**
+
+- [Keep only participants who meet inclusion criteria](10-filter.qmd#sec-filter-keep)
+- [Drop participants who meet exclusion criteria](10-filter.qmd#sec-filter-out)
+- [Both — apply a full inclusion/exclusion checklist](10-filter.qmd#sec-filter-both)
+:::
+
+## Filter rows to keep — inclusion criteria {#sec-filter-keep}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+Use filter() when you can describe who you want to KEEP. Watch out: filter() treats NA like FALSE, so rows with a missing value on your filtering variable get silently dropped too — not just the rows that truly fail the criteria.
+
+```r
+library(dplyr)
+
+# keep only participants who consented and are 18+
+survey_raw <- survey_raw |>
+  filter(consent == "Yes", age >= 18)
+```
+
+::: {.callout-tip}
+Because filter() drops NA rows on the condition, always compare `nrow()` before and after, and check whether anyone was dropped only because of a missing value rather than truly failing the criteria.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [See the drop-focused version (filter_out)](10-filter.qmd#sec-filter-out)
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Filter rows out — exclusion criteria {#sec-filter-out}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+filter_out(), added in dplyr 1.2.0, is the companion to filter() built specifically for describing who you want to REMOVE. Unlike a negated filter() (using !condition), filter_out() treats NA like FALSE too — so participants with a missing value on your exclusion variable are correctly kept rather than accidentally dropped. Requires dplyr 1.2.0 or later (`packageVersion("dplyr")` to check).
+
+```r
+library(dplyr)
+
+# drop anyone who withdrew consent, or failed the attention check
+survey_raw <- survey_raw |>
+  filter_out(consent == "Withdrew", attention_check == "Failed")
+
+# compare: the old, error-prone way to write the same thing with filter()
+# survey_raw |> filter(!(consent == "Withdrew" & attention_check == "Failed"))
+# ...that version silently mishandles any row with an NA in either column
+```
+
+::: {.callout-tip}
+Reach for filter_out() any time you catch yourself writing `!=` or wrapping a condition in `!( )` to describe who to exclude — that's exactly the pattern it replaces.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [See the keep-focused version (filter)](10-filter.qmd#sec-filter-keep)
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Apply a full inclusion/exclusion checklist {#sec-filter-both}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+Most studies apply both at once — keep the eligible, then drop the excluded. Doing this as two explicit steps (rather than one long condition) keeps your criteria easy to read back later, e.g. when writing a participant-flow paragraph for a methods section.
+
+```r
+library(dplyr)
+
+n_start <- nrow(survey_raw)
+
+survey_raw <- survey_raw |>
+  # inclusion: keep only eligible participants
+  filter(consent == "Yes", age >= 18) |>
+  # exclusion: drop anyone who should be removed even if eligible
+  filter_out(attention_check == "Failed", duplicate_flag == TRUE)
+
+n_end <- nrow(survey_raw)
+n_start - n_end   # how many participants were removed
+```
+
+::: {.callout-tip}
+Keep a running count like `n_start`/`n_end` for every inclusion/exclusion step — it's exactly the number you'll need for a CONSORT-style participant flow description.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::

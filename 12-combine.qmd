@@ -1,0 +1,68 @@
+# Combine files
+
+::: {.question}
+**How do you need to combine your files?**
+
+- [Stack files with the same columns (e.g. separate batches/sessions)](12-combine.qmd#sec-combine-bind)
+- [Merge files that share a participant ID but have different columns](12-combine.qmd#sec-combine-join)
+:::
+
+## Stack files with matching columns {#sec-combine-bind}
+
+::: {.pkgs}
+Packages: `readr` `dplyr` `here`
+:::
+
+bind_rows() stacks data frames on top of each other, matching by column name (filling any column that's missing in one file with NA).
+
+```r
+library(readr)
+library(dplyr)
+library(here)
+
+batch1 <- read_csv(here("data", "raw", "batch1.csv"))
+batch2 <- read_csv(here("data", "raw", "batch2.csv"))
+
+all_data <- bind_rows(batch1, batch2)
+```
+
+::: {.callout-tip}
+Run `clean_names()` on each file first — bind_rows() matches by exact column name, so inconsistent naming will create extra columns instead of an error.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Merge files by participant ID {#sec-combine-join}
+
+::: {.pkgs}
+Packages: `dplyr` `here`
+:::
+
+left_join() keeps every row from your first (left) dataset and attaches matching columns from the second wherever the ID matches.
+
+```r
+library(dplyr)
+library(here)
+
+demographics   <- read_csv(here("data", "raw", "demographics.csv"))
+survey_scores  <- read_csv(here("data", "raw", "survey_scores.csv"))
+
+full_data <- left_join(demographics, survey_scores, by = "participant_id")
+
+# check for participants that didn't find a match
+full_data |> filter(is.na(survey_score))
+```
+
+::: {.callout-tip}
+If row counts look wrong after joining, check for duplicate IDs in either file first — they cause joins to multiply rows unexpectedly.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::

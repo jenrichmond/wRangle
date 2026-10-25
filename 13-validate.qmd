@@ -1,0 +1,33 @@
+# Check your data is clean {#sec-validate}
+
+::: {.pkgs}
+Packages: `dplyr` `janitor` `naniar`
+:::
+
+A short checklist to re-run every time you update your cleaning script, before you trust the data enough to analyse it.
+
+```r
+library(dplyr)
+
+# range checks — anything outside a plausible range?
+survey_raw |> filter(age < 0 | age > 100)
+survey_raw |> filter(if_any(starts_with("item"), ~ . < 1 | . > 5))
+
+# unique participant IDs?
+library(janitor)
+survey_raw |> get_dupes(participant_id)
+
+# any missingness left unaccounted for?
+library(naniar)
+vis_miss(survey_raw)
+```
+
+::: {.callout-tip}
+Save these checks as their own short script — re-running it every time you touch the raw data catches problems early.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now save the clean data](14-export.qmd#sec-export)
+:::

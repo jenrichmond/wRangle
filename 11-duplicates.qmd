@@ -1,0 +1,28 @@
+# Duplicates {#sec-duplicates}
+
+::: {.pkgs}
+Packages: `janitor` `dplyr`
+:::
+
+Duplicate participant IDs can mean a participant submitted twice, a data entry error, or sometimes a genuine repeated-measures row — check before deleting.
+
+```r
+library(janitor)
+
+# see the actual duplicate rows
+survey_raw |> get_dupes(participant_id)
+
+library(dplyr)
+# keep only the first occurrence of each ID
+survey_raw <- survey_raw |> distinct(participant_id, .keep_all = TRUE)
+```
+
+::: {.callout-tip}
+Investigate *why* a duplicate exists before deleting it — it might be a legitimate second session, not an error.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::

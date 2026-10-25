@@ -1,0 +1,125 @@
+# Recoding & scale scores
+
+::: {.question}
+**What kind of recoding do you need?**
+
+- [Convert coded values to labels (1/2 → Male/Female)](08-recode.qmd#sec-recode-labels)
+- [Reverse-score a Likert item](08-recode.qmd#sec-recode-reverse)
+- [Combine items into a scale score](08-recode.qmd#sec-recode-scale)
+- [Recode based on a condition (e.g. age bands)](08-recode.qmd#sec-recode-case-when)
+:::
+
+## Convert coded values to labels {#sec-recode-labels}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+case_when() is the modern, recommended way to do this in dplyr (it's clearer with multiple conditions and is now preferred over the older recode() function).
+
+```r
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(gender = case_when(
+    gender == 1 ~ "Male",
+    gender == 2 ~ "Female",
+    gender == 3 ~ "Nonbinary/other",
+    TRUE ~ NA_character_
+  ))
+```
+
+::: {.callout-tip}
+Always include a fallback line (`TRUE ~ NA_character_`) so unexpected values become a visible NA instead of silently disappearing.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Reverse-score a Likert item {#sec-recode-reverse}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+The general formula for reverse-scoring is: reversed = (scale minimum + scale maximum) − original score.
+
+```r
+library(dplyr)
+
+# example: a 1–5 Likert item, so min + max = 6
+survey_raw <- survey_raw |>
+  mutate(item3_r = 6 - item3)
+```
+
+::: {.callout-tip}
+Double-check your scale's actual min and max before using this formula — a 0–4 scale uses 4, not 6.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now build a scale score](08-recode.qmd#sec-recode-scale)
+:::
+
+## Build a scale score from items {#sec-recode-scale}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+across() lets you average (or sum) several item columns at once into a single total score.
+
+```r
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(anxiety_total = rowMeans(across(c(item1, item2, item3_r, item4)), na.rm = TRUE))
+
+# or a sum instead of a mean:
+# mutate(anxiety_total = rowSums(across(c(item1, item2, item3_r, item4)), na.rm = TRUE))
+```
+
+::: {.callout-tip}
+Reverse-score any relevant items **first** (previous step) before averaging them into a total — otherwise the scale score will be wrong.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Recode based on a condition {#sec-recode-case-when}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+case_when() evaluates conditions top-to-bottom and uses the first one that matches — great for turning a continuous variable into groups.
+
+```r
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(age_group = case_when(
+    age < 18 ~ "under 18",
+    age >= 18 & age < 30 ~ "18-29",
+    age >= 30 & age < 50 ~ "30-49",
+    age >= 50 ~ "50+",
+    TRUE ~ NA_character_
+  ))
+```
+
+::: {.callout-tip}
+Order matters — case_when() stops at the first TRUE condition, so put more specific rules earlier.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::

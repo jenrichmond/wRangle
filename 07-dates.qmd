@@ -1,0 +1,130 @@
+# Dates & durations
+
+::: {.question}
+**What date or time task do you need?**
+
+- [Parse a date column (text → real date)](07-dates.qmd#sec-date-parse)
+- [Calculate age from date of birth](07-dates.qmd#sec-date-age)
+- [Calculate survey duration between two timestamps](07-dates.qmd#sec-date-duration)
+- [Extract parts of a date (year, month, weekday)](07-dates.qmd#sec-date-extract)
+:::
+
+## Parse a date column {#sec-date-parse}
+
+::: {.pkgs}
+Packages: `lubridate`
+:::
+
+lubridate's parsing functions are named after the order your dates appear in: y = year, m = month, d = day. Pick the one matching your raw format.
+
+```r
+library(lubridate)
+
+survey_raw <- survey_raw |>
+  mutate(start_date = ymd(start_date))     # format: 2026-07-01
+  # mutate(start_date = mdy(start_date))   # format: 07/01/2026
+  # mutate(start_date = dmy(start_date))   # format: 01/07/2026
+  # mutate(start_time = ymd_hms(start_time)) # includes a time stamp
+
+# check nothing failed to parse
+sum(is.na(survey_raw$start_date))
+```
+
+::: {.callout-tip}
+A sudden jump in NAs after parsing usually means you picked the wrong order (e.g. used mdy() on day-first dates).
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now extract year/month/weekday](07-dates.qmd#sec-date-extract)
+- [Now calculate age](07-dates.qmd#sec-date-age)
+:::
+
+## Calculate age from date of birth {#sec-date-age}
+
+::: {.pkgs}
+Packages: `lubridate` `dplyr`
+:::
+
+Subtracting dates gives you days, so convert to years using lubridate's time_length() for an accurate result (it accounts for leap years).
+
+```r
+library(lubridate)
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(
+    dob = ymd(dob),
+    age_years = time_length(interval(dob, today()), "years")
+  )
+```
+
+::: {.callout-tip}
+Round with `floor(age_years)` if you want age in completed years rather than a decimal.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Calculate survey duration {#sec-date-duration}
+
+::: {.pkgs}
+Packages: `lubridate`
+:::
+
+Useful for spotting participants who rushed through (likely low-quality data) or who left the survey open for hours.
+
+```r
+library(lubridate)
+
+survey_raw <- survey_raw |>
+  mutate(
+    start_time = ymd_hms(start_time),
+    end_time   = ymd_hms(end_time),
+    duration_mins = time_length(interval(start_time, end_time), "minutes")
+  )
+```
+
+::: {.callout-tip}
+Filter out implausible durations as a data-quality check, e.g. `filter(duration_mins < 1)` for a survey that should take 20+ minutes.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Extract parts of a date {#sec-date-extract}
+
+::: {.pkgs}
+Packages: `lubridate` `dplyr`
+:::
+
+Handy for grouping participants by data collection wave, or checking for day-of-week effects.
+
+```r
+library(lubridate)
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(
+    year    = year(start_date),
+    month   = month(start_date, label = TRUE),
+    weekday = wday(start_date, label = TRUE)
+  )
+```
+
+::: {.callout-tip}
+`label = TRUE` gives you readable labels ("Jan", "Mon") instead of plain numbers.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::

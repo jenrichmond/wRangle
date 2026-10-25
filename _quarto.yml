@@ -1,0 +1,51 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Data Wrangling Tool"
+  subtitle: "Cleaning messy psychology survey data with R & the tidyverse"
+  author: "Reveal Research"
+  site-url: https://jenrichmond.github.io/wRangle/
+  repo-url: https://github.com/jenrichmond/wRangle
+  repo-actions: [edit, issue]
+  search: true
+  page-footer:
+    center: |
+      Built by [Reveal Research](https://www.revealresearch.org) ·
+      [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+  chapters:
+    - index.qmd
+    - part: "Getting started"
+      chapters:
+        - 01-setup.qmd
+        - 02-import.qmd
+        - 03-overview.qmd
+    - part: "Cleaning"
+      chapters:
+        - 04-names.qmd
+        - 05-types.qmd
+        - 06-missing.qmd
+        - 07-dates.qmd
+        - 08-recode.qmd
+        - 09-reshape.qmd
+    - part: "Rows & files"
+      chapters:
+        - 10-filter.qmd
+        - 11-duplicates.qmd
+        - 12-combine.qmd
+    - part: "Finishing up"
+      chapters:
+        - 13-validate.qmd
+        - 14-export.qmd
+
+format:
+  html:
+    theme:
+      light: [cosmo, styles.scss]
+    highlight-style: cobalt.theme
+    code-copy: true
+    toc: true
+    toc-title: "On this page"
+    number-sections: false
+    anchor-sections: true

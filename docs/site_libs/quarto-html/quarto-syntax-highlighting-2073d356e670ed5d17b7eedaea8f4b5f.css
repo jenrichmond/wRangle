@@ -1,0 +1,248 @@
+/* quarto syntax highlight colors */
+:root {
+  --quarto-hl-al-color: #ffffff;
+  --quarto-hl-an-color: #0088ff;
+  --quarto-hl-at-color: #ffffff;
+  --quarto-hl-bn-color: #ff628c;
+  --quarto-hl-bu-color: #ffffff;
+  --quarto-hl-ch-color: #3ad900;
+  --quarto-hl-co-color: #0088ff;
+  --quarto-hl-cv-color: #0088ff;
+  --quarto-hl-cn-color: #ff628c;
+  --quarto-hl-cf-color: #ff9d00;
+  --quarto-hl-dt-color: #ffffff;
+  --quarto-hl-dv-color: #ff628c;
+  --quarto-hl-do-color: #0088ff;
+  --quarto-hl-er-color: #ffffff;
+  --quarto-hl-ex-color: #ffffff;
+  --quarto-hl-fl-color: #ff628c;
+  --quarto-hl-fu-color: #ffdd00;
+  --quarto-hl-im-color: #ffffff;
+  --quarto-hl-in-color: #ffffff;
+  --quarto-hl-kw-color: #ff9d00;
+  --quarto-hl-op-color: #ff9d00;
+  --quarto-hl-ot-color: #ffffff;
+  --quarto-hl-pp-color: #ffffff;
+  --quarto-hl-re-color: #ffffff;
+  --quarto-hl-sc-color: #3ad900;
+  --quarto-hl-ss-color: #3ad900;
+  --quarto-hl-st-color: #3ad900;
+  --quarto-hl-va-color: #ffffff;
+  --quarto-hl-vs-color: #3ad900;
+  --quarto-hl-wa-color: #ffffff;
+}
+
+/* other quarto variables */
+:root {
+  --quarto-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* syntax highlight based on Pandoc's rules */
+pre > code.sourceCode > span {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+code.sourceCode > span {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+div.sourceCode,
+div.sourceCode pre.sourceCode {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Normal */
+code span {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Alert */
+code span.al {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Annotation */
+code span.an {
+  color: #0088ff;
+  font-style: italic;
+}
+
+/* Attribute */
+code span.at {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* BaseN */
+code span.bn {
+  color: #ff628c;
+  font-style: inherit;
+}
+
+/* BuiltIn */
+code span.bu {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* ControlFlow */
+code span.cf {
+  color: #ff9d00;
+  font-style: inherit;
+}
+
+/* Char */
+code span.ch {
+  color: #3ad900;
+  font-style: inherit;
+}
+
+/* Constant */
+code span.cn {
+  color: #ff628c;
+  font-style: inherit;
+}
+
+/* Comment */
+code span.co {
+  color: #0088ff;
+  font-style: italic;
+}
+
+/* CommentVar */
+code span.cv {
+  color: #0088ff;
+  font-style: italic;
+}
+
+/* Documentation */
+code span.do {
+  color: #0088ff;
+  font-style: italic;
+}
+
+/* DataType */
+code span.dt {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* DecVal */
+code span.dv {
+  color: #ff628c;
+  font-style: inherit;
+}
+
+/* Error */
+code span.er {
+  color: #ffffff;
+  font-style: inherit;
+  text-decoration: underline;
+}
+
+/* Extension */
+code span.ex {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Float */
+code span.fl {
+  color: #ff628c;
+  font-style: inherit;
+}
+
+/* Function */
+code span.fu {
+  color: #ffdd00;
+  font-style: inherit;
+}
+
+/* Import */
+code span.im {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Information */
+code span.in {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Keyword */
+code span.kw {
+  color: #ff9d00;
+  font-style: inherit;
+}
+
+/* Operator */
+code span.op {
+  color: #ff9d00;
+  font-style: inherit;
+}
+
+/* Other */
+code span.ot {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* Preprocessor */
+code span.pp {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* RegionMarker */
+code span.re {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* SpecialChar */
+code span.sc {
+  color: #3ad900;
+  font-style: inherit;
+}
+
+/* SpecialString */
+code span.ss {
+  color: #3ad900;
+  font-style: inherit;
+}
+
+/* String */
+code span.st {
+  color: #3ad900;
+  font-style: inherit;
+}
+
+/* Variable */
+code span.va {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+/* VerbatimString */
+code span.vs {
+  color: #3ad900;
+  font-style: inherit;
+}
+
+/* Warning */
+code span.wa {
+  color: #ffffff;
+  font-style: inherit;
+}
+
+.prevent-inlining {
+  content: "</";
+}
+
+/*# sourceMappingURL=e8bf49701ebd6e57d1b2b08068b72241.css.map */

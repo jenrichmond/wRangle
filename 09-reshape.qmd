@@ -1,0 +1,65 @@
+# Reshape wide & long
+
+::: {.question}
+**Which direction do you need to reshape?**
+
+- [Wide to long (e.g. trial1, trial2, trial3 → one 'trial' column)](09-reshape.qmd#sec-reshape-long)
+- [Long to wide (one row per trial → one row per participant)](09-reshape.qmd#sec-reshape-wide)
+:::
+
+## Reshape wide to long {#sec-reshape-long}
+
+::: {.pkgs}
+Packages: `tidyr`
+:::
+
+Long format — one row per observation — is what most repeated-measures ANOVAs and mixed-effects models in R expect.
+
+```r
+library(tidyr)
+
+survey_long <- survey_raw |>
+  pivot_longer(
+    cols = starts_with("trial"),
+    names_to = "trial",
+    values_to = "rt"
+  )
+```
+
+::: {.callout-tip}
+`cols` accepts helpers like `starts_with()`, `contains()`, or just a plain vector of column names.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Reshape long to wide {#sec-reshape-wide}
+
+::: {.pkgs}
+Packages: `tidyr`
+:::
+
+Useful when you need one row per participant for a correlation matrix or a simple summary table.
+
+```r
+library(tidyr)
+
+survey_wide <- survey_long |>
+  pivot_wider(
+    names_from = trial,
+    values_from = rt
+  )
+```
+
+::: {.callout-tip}
+pivot_wider() and pivot_longer() are exact inverses — if something looks wrong, try reversing the operation to see where it breaks.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::

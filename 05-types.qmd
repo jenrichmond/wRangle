@@ -1,0 +1,124 @@
+# Variable types
+
+::: {.question}
+**What's the variable type problem?**
+
+- [I just want to check all my variable types](05-types.qmd#sec-types-check)
+- [A numeric column imported as character (stray text, commas, symbols)](05-types.qmd#sec-types-tonumeric)
+- [A date column imported as a number (Excel serial date)](05-types.qmd#sec-types-exceldate)
+- [I want to convert a column to a factor](05-types.qmd#sec-types-tofactor)
+:::
+
+## Check your variable types {#sec-types-check}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+A column that should be numeric but shows up as `<chr>` is one of the most common silent errors in survey data — it usually means at least one row has a stray character in it.
+
+```r
+library(dplyr)
+glimpse(survey_raw)   # quick look at every column's type
+
+# or check a single column's class
+class(survey_raw$age)
+```
+
+::: {.callout-tip}
+Do this right after import, and again after cleaning — catching a type problem early saves you from confusing downstream errors like a numeric summary refusing to run.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Fix a character column that should be numeric](05-types.qmd#sec-types-tonumeric)
+- [Fix an Excel date stored as a number](05-types.qmd#sec-types-exceldate)
+:::
+
+## Convert a character column to numeric {#sec-types-tonumeric}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+as.numeric() silently turns anything it can't parse into NA. Before you trust the conversion, check which original values failed — that's usually where the real problem (stray text, a comma, a typo) is hiding.
+
+```r
+library(dplyr)
+
+# check which values will fail to convert BEFORE you overwrite the column
+survey_raw |>
+  filter(is.na(as.numeric(age)) & !is.na(age)) |>
+  distinct(age)
+
+survey_raw <- survey_raw |>
+  mutate(age = as.numeric(age))
+
+# check for new NAs introduced by the conversion
+sum(is.na(survey_raw$age))
+```
+
+::: {.callout-tip}
+Run the "which values failed" check **before** you overwrite the column, not after — once `age` has been reassigned, the original text values are gone and you can't see what caused the problem.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Fix an Excel date stored as a number {#sec-types-exceldate}
+
+::: {.pkgs}
+Packages: `janitor`
+:::
+
+This shows up when a spreadsheet program stores a date as a serial number (e.g. 45678) instead of text — common after copy-pasting from Excel into a CSV.
+
+```r
+library(janitor)
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(start_date = excel_numeric_to_date(as.numeric(start_date)))
+```
+
+::: {.callout-tip}
+If some dates parse and others don't, check whether the column is a mix of real dates and Excel serial numbers — a common result of copy-pasting data from two different spreadsheets.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
+
+## Convert a column to a factor {#sec-types-tofactor}
+
+::: {.pkgs}
+Packages: `dplyr`
+:::
+
+Convert grouping/categorical variables (like experimental condition) to factors before modeling — many R modeling functions treat factors differently from plain character columns.
+
+```r
+library(dplyr)
+
+survey_raw <- survey_raw |>
+  mutate(condition = as.factor(condition))
+
+# check the levels
+levels(survey_raw$condition)
+```
+
+::: {.callout-tip}
+If the order of levels matters (e.g. "Low" \< "Medium" \< "High"), set it explicitly with `factor(condition, levels = c("Low", "Medium", "High"))` rather than relying on alphabetical order.
+:::
+
+::: {.next-steps}
+**Where to next:**
+
+- [Now check your data is clean](13-validate.qmd#sec-validate)
+:::
