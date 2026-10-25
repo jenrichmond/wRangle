@@ -12,6 +12,7 @@ glimpse() gives you a compact, column-by-column view of your data: the variable 
 
 ```r
 library(dplyr)
+
 glimpse(survey_raw)
 ```
 
@@ -21,7 +22,9 @@ miss_var_summary() ranks every column by how much of it is missing. vis_miss() t
 
 ```r
 library(naniar)
+
 miss_var_summary(survey_raw)
+
 vis_miss(survey_raw)
 ```
 
@@ -31,11 +34,32 @@ tabyl() gives you a frequency table for one categorical column — counts and pe
 
 ```r
 library(janitor)
-survey_raw |> tabyl(gender)
+
+survey_raw |> 
+  tabyl(gender)
+  
+```
+
+## DataExplorer
+
+Try plot_histogram() to look for crazy values in continuous variables, plot_bar() to find coding errors in categorical variables, and plot_missing() to look at where your data is missing unexpectedly. 
+
+```r
+library(DataExplorer)
+
+survey_raw |> 
+  plot_histogram()
+  
+survey_raw |> 
+  plot_bar()
+  
+survey_raw |> 
+  plot_missing()
+  
 ```
 
 ::: {.callout-tip}
-Re-run glimpse(), vis_miss() and/or tabyl() after each cleaning step, not just at the start — it's the fastest way to confirm a fix actually worked.
+Re-run glimpse(), vis_miss(), tabyl() and/or the plot_x() functions after each cleaning step, not just at the start — it's the fastest way to confirm a fix actually worked.
 :::
 
 ::: {.callout-note collapse="true"}
