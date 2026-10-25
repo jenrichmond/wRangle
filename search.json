@@ -1,0 +1,527 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Data Wrangling Tool",
+    "section": "",
+    "text": "Welcome\nCleaning messy psychology survey data with R & the tidyverse — work your way from raw export to analysable dataset.",
+    "crumbs": [
+      "Welcome"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use-this",
+    "href": "index.html#how-to-use-this",
+    "title": "Data Wrangling Tool",
+    "section": "How to use this",
+    "text": "How to use this\nData cleaning usually follows a fairly consistent set of steps — from setting up your project, through importing and checking your data, to saving a clean version ready for analysis. You can work through those steps in order from start to finish, or jump straight to whichever task matches what you’re stuck on right now — whatever’s useful for your data today. Each section ends with real R code you can copy into your script, plus a tip about why it matters.\nBefore you start, install the packages once: install.packages(c(\"tidyverse\", \"janitor\", \"naniar\", \"here\")). Then at the top of every cleaning script: library(tidyverse) loads dplyr, tidyr, readr, and lubridate together; add library(janitor), library(naniar), and library(here) separately.\nStart every project as an RStudio Project with separate folders for raw and clean data, and use here() to build file paths (e.g. here(\"data\", \"raw\", \"survey_raw.csv\")) instead of typing them out by hand — see Set up your project.",
+    "crumbs": [
+      "Welcome"
+    ]
+  },
+  {
+    "objectID": "index.html#jump-to-a-task",
+    "href": "index.html#jump-to-a-task",
+    "title": "Data Wrangling Tool",
+    "section": "Jump to a task",
+    "text": "Jump to a task\n\n🗂️ Set up projectHow do I set up my project folder? 📥 Import dataWhat kind of file are you importing? 🔍 Overview & problemsHow do I get an overview of my data? 🏷️ Clean column namesHow do I clean up messy column names? ✏️ Rename variablesHow do I rename individual variables? 🔡 Variable typesWhat’s the variable type problem? 🕳️ Missing dataHow are your missing values represented? 📅 Dates & durationsWhat date or time task do you need? 🔢 Recode & scale scoresWhat kind of recoding do you need? ↔︎️ Reshape wide/longWhich direction do you need to reshape? 🚦 Inclusion/exclusionWhat kind of criteria are you applying? 👥 DuplicatesHow do I find or remove duplicates? 🔗 Combine filesHow do you need to combine your files? ✅ ValidateHow do I check my data is actually clean? 💾 Save / exportHow do I save my clean data reproducibly?\n\n\nBuilt by Reveal Research in collaboration with Claude Cowork for psychology students starting out in R. Licensed under CC BY 4.0 — share and adapt freely, with credit. Code is illustrative. Be sure to adapt variable and file names to your own dataset.",
+    "crumbs": [
+      "Welcome"
+    ]
+  },
+  {
+    "objectID": "01-setup.html",
+    "href": "01-setup.html",
+    "title": "Set up your project",
+    "section": "",
+    "text": "Packages: here\n\nBefore you write a single line of cleaning code, set up a proper R Project with separate folders for raw and clean data. This keeps your original raw file safe from being overwritten, and — combined with the here package — means your file paths work on any computer, not just yours.\n# In RStudio: File &gt; New Project &gt; New Directory &gt; New Project\n# This creates a .Rproj file at your project's root folder\n\n# Project folder structure:\n#\n# my_project/\n# |-- my_project.Rproj\n# |-- data/\n# |   |-- raw/      &lt;- original files, never edited by hand\n# |   `-- clean/    &lt;- outputs from your cleaning script\n# `-- scripts/\n#     `-- 01_clean_data.R\n\n# Inside that project, create the data folders (once):\ndir.create(\"data/raw\", recursive = TRUE)\ndir.create(\"data/clean\", recursive = TRUE)\n\n# Install the here package once\ninstall.packages(\"here\")\nlibrary(here)\n\n# here() builds a path from your project's root, no matter which\n# sub-folder your script lives in or who runs it\nhere(\"data\", \"raw\", \"survey_raw.csv\")\n\n\n\n\n\n\nTip\n\n\n\nNever hard-code a full file path like \"C:/Users/Jen/Desktop/survey.csv\" — it will break on anyone else’s computer (including future-you on a new laptop). here() builds paths relative to your project’s root folder instead, so the same script runs anywhere.\n\n\n\nWhere to next:\n\nNow import my raw data file",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Set up your project</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html",
+    "href": "02-import.html",
+    "title": "Import your data",
+    "section": "",
+    "text": "Import a CSV file\nread_csv() guesses each column’s type from the data and is far more predictable than base R’s read.csv(). Wrapping the file path in here() means this works whether you run it from a script, a notebook, or someone else’s computer.",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import your data</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#sec-import-csv",
+    "href": "02-import.html#sec-import-csv",
+    "title": "Import your data",
+    "section": "",
+    "text": "Packages: readr here\n\n\nlibrary(readr)\nlibrary(here)\n\nsurvey_raw &lt;- read_csv(here(\"data\", \"raw\", \"survey_raw.csv\"))\n\n# check for anything readr couldn't parse cleanly\nproblems(survey_raw)\n\n\n\n\n\n\nTip\n\n\n\nAlways read into a new object (survey_raw) and never edit the CSV by hand. Treat the raw file as untouchable — that’s why it lives in data/raw/.\n\n\n\nWhere to next:\n\nNow get an overview of it",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import your data</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#sec-import-excel",
+    "href": "02-import.html#sec-import-excel",
+    "title": "Import your data",
+    "section": "Import an Excel file",
+    "text": "Import an Excel file\n\nPackages: readxl here\n\nreadxl is part of the wider tidyverse family and pairs naturally with read_csv() — same idea, for .xlsx files.\nlibrary(readxl)\nlibrary(here)\n\nsurvey_raw &lt;- read_excel(here(\"data\", \"raw\", \"survey_raw.xlsx\"), sheet = 1)\n\n\n\n\n\n\nTip\n\n\n\nIf your spreadsheet has extra title rows above the real header, add skip = n to skip them.\n\n\n\nWhere to next:\n\nNow get an overview of it",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import your data</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#sec-import-spss",
+    "href": "02-import.html#sec-import-spss",
+    "title": "Import your data",
+    "section": "Import an SPSS (.sav) file",
+    "text": "Import an SPSS (.sav) file\n\nPackages: haven here\n\nhaven is the tidyverse-adjacent package for reading SPSS/Stata/SAS files. SPSS files often store labelled values (e.g. 1 = ‘Male’) as a special haven_labelled type, which you’ll usually want to convert.\nlibrary(haven)\nlibrary(here)\n\nsurvey_raw &lt;- read_sav(here(\"data\", \"raw\", \"survey_raw.sav\"))\n\n# turn value labels into a proper R factor\nsurvey_raw &lt;- survey_raw |&gt; as_factor()\n\n\n\n\n\n\nTip\n\n\n\nRun str(survey_raw) after importing — SPSS files frequently hide useful info in variable/value labels that’s easy to miss.\n\n\n\nWhere to next:\n\nNow get an overview of it",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import your data</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#sec-import-qualtrics",
+    "href": "02-import.html#sec-import-qualtrics",
+    "title": "Import your data",
+    "section": "Import a Qualtrics export",
+    "text": "Import a Qualtrics export\n\nPackages: readr here\n\nQualtrics CSV exports have three header rows: variable names, full question text, and an internal ImportId row. You usually want only the first row as your column names.\nlibrary(readr)\nlibrary(here)\n\n# grab the real variable names from row 1\nvar_names &lt;- read_csv(here(\"data\", \"raw\", \"survey_raw.csv\"), n_max = 0) |&gt; names()\n\n# skip the first 3 rows (names, question text, import IDs), reuse var_names\nsurvey_raw &lt;- read_csv(here(\"data\", \"raw\", \"survey_raw.csv\"), skip = 3, col_names = var_names)\n\n\n\n\n\n\nTip\n\n\n\nThe qualtRics package is another way around these formatting quirks: use fetch_survey() if you have API access, or read_survey() to read an exported CSV directly — it handles the header rows for you and keeps the question wording as metadata instead of discarding it.\n\n\n\nWhere to next:\n\nNow get an overview of it",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import your data</span>"
+    ]
+  },
+  {
+    "objectID": "03-overview.html",
+    "href": "03-overview.html",
+    "title": "Get an overview & spot problems",
+    "section": "",
+    "text": "dplyr\nAlways do this before any cleaning — it tells you exactly what needs fixing, rather than guessing.\nglimpse() gives you a compact, column-by-column view of your data: the variable name, its type, and a peek at the first few values. Scan the type column first — that’s where dates or numbers hiding as text show up — then scan the values themselves for anything that looks off.",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
+    ]
+  },
+  {
+    "objectID": "03-overview.html#dplyr",
+    "href": "03-overview.html#dplyr",
+    "title": "Get an overview & spot problems",
+    "section": "",
+    "text": "library(dplyr)\nglimpse(survey_raw)",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
+    ]
+  },
+  {
+    "objectID": "03-overview.html#naniar",
+    "href": "03-overview.html#naniar",
+    "title": "Get an overview & spot problems",
+    "section": "naniar",
+    "text": "naniar\nmiss_var_summary() ranks every column by how much of it is missing. vis_miss() turns that into a visual grid, so you can see at a glance whether missingness is scattered randomly or concentrated in particular variables or participants — a pattern worth investigating (e.g. everyone who abandoned the survey partway through).\nlibrary(naniar)\nmiss_var_summary(survey_raw)\nvis_miss(survey_raw)",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
+    ]
+  },
+  {
+    "objectID": "03-overview.html#janitor",
+    "href": "03-overview.html#janitor",
+    "title": "Get an overview & spot problems",
+    "section": "janitor",
+    "text": "janitor\ntabyl() gives you a frequency table for one categorical column — counts and percentages for every value it contains. Use it to catch typo’d or inconsistently capitalized categories, unexpectedly rare or common groups, and missing-data codes turning up as their own “category.”\nlibrary(janitor)\nsurvey_raw |&gt; tabyl(gender)\n\n\n\n\n\n\nTip\n\n\n\nRe-run glimpse(), vis_miss() and/or tabyl() after each cleaning step, not just at the start — it’s the fastest way to confirm a fix actually worked.\n\n\n\n\n\n\n\n\nNoteWhat kind of problems are you looking for?\n\n\n\n\n\n\nWrong variable types — a date or number showing up as &lt;chr&gt; (text), usually caused by a stray character, symbol, or an Excel serial number.\nColumn names that aren’t meaningful — survey-platform codes like q3, Q7, or SQ001 instead of descriptive names.\nSuspicious numeric values that are probably missing-data codes in disguise — things like -99, 999, or -1 sitting in an otherwise 1-5 range.\nWide data that needs to be long (or vice versa) — repeated trials or timepoints spread across separate columns instead of stacked into rows for plotting/modeling.\nExtra columns you don’t need — survey-platform metadata like IP address, browser info, or progress percentage that came along with the export.\nColumns that are entirely (or almost entirely) missing — often an unused survey question or something that didn’t export properly.\nInconsistent category labels within the same variable — \"Female\", \"female\", and \"FEMALE\" being treated as three different groups.\nAn unexpected number of rows — more or fewer than you expected can mean a duplicated import, a botched merge, or test/preview responses left in the file.\nImplausible values — ages over 100, ratings outside the scale’s range, reaction times of 9999ms — worth a first skim even before the formal validation step later.\nOne column doing two jobs — e.g. a single field holding multiple “select all that apply” answers separated by commas.\n\n\n\n\n\nWhere to next:\n\nNow clean column names\nNow check & convert variable types\nNow deal with missing data\nNow reshape wide/long",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
+    ]
+  },
+  {
+    "objectID": "04-names.html",
+    "href": "04-names.html",
+    "title": "Clean & rename columns",
+    "section": "",
+    "text": "Clean up messy column names\nclean_names() converts column names like “Participant ID” or “Q1_Have you…” into consistent snake_case (participant_id, q1_have_you) so they’re easy and safe to reference in code.",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Clean & rename columns</span>"
+    ]
+  },
+  {
+    "objectID": "04-names.html#sec-cleannames",
+    "href": "04-names.html#sec-cleannames",
+    "title": "Clean & rename columns",
+    "section": "",
+    "text": "Packages: janitor\n\n\nlibrary(janitor)\n\nsurvey_raw &lt;- survey_raw |&gt; clean_names()\n\nnames(survey_raw)\n\n\n\n\n\n\nTip\n\n\n\nDo this immediately after import, before any other cleaning step — every later step depends on knowing the real column names.\n\n\n\nWhere to next:\n\nNow rename individual variables\nNow get an overview\nNow deal with missing data",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Clean & rename columns</span>"
+    ]
+  },
+  {
+    "objectID": "04-names.html#sec-rename-individual",
+    "href": "04-names.html#sec-rename-individual",
+    "title": "Clean & rename columns",
+    "section": "Rename individual variables",
+    "text": "Rename individual variables\n\nPackages: dplyr\n\nclean_names() standardizes formatting, but you’ll usually still want clearer names for specific columns — dplyr::rename() takes new_name = old_name pairs. This matters most for survey-platform exports, where columns often arrive named q3, q7, or SQ001.\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  rename(\n    participant_age = q3,\n    condition_group  = q7\n  )\n\n# rename many columns at once using a data dictionary (a lookup table)\nname_dictionary &lt;- tibble::tibble(\n  old_name = c(\"q3\", \"q7\"),\n  new_name = c(\"participant_age\", \"condition_group\")\n)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  rename_with(\n    ~ name_dictionary$new_name[match(., name_dictionary$old_name)],\n    .cols = name_dictionary$old_name\n  )\n\n\n\n\n\n\nTip\n\n\n\nRenaming right after clean_names() means every later step in your script can use clear variable names instead of cryptic survey-platform codes like q3 or SQ001.\n\n\n\nWhere to next:\n\nNow get an overview",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Clean & rename columns</span>"
+    ]
+  },
+  {
+    "objectID": "05-types.html",
+    "href": "05-types.html",
+    "title": "Variable types",
+    "section": "",
+    "text": "Check your variable types\nA column that should be numeric but shows up as &lt;chr&gt; is one of the most common silent errors in survey data — it usually means at least one row has a stray character in it.",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Variable types</span>"
+    ]
+  },
+  {
+    "objectID": "05-types.html#sec-types-check",
+    "href": "05-types.html#sec-types-check",
+    "title": "Variable types",
+    "section": "",
+    "text": "Packages: dplyr\n\n\nlibrary(dplyr)\nglimpse(survey_raw)   # quick look at every column's type\n\n# or check a single column's class\nclass(survey_raw$age)\n\n\n\n\n\n\nTip\n\n\n\nDo this right after import, and again after cleaning — catching a type problem early saves you from confusing downstream errors like a numeric summary refusing to run.\n\n\n\nWhere to next:\n\nFix a character column that should be numeric\nFix an Excel date stored as a number",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Variable types</span>"
+    ]
+  },
+  {
+    "objectID": "05-types.html#sec-types-tonumeric",
+    "href": "05-types.html#sec-types-tonumeric",
+    "title": "Variable types",
+    "section": "Convert a character column to numeric",
+    "text": "Convert a character column to numeric\n\nPackages: dplyr\n\nas.numeric() silently turns anything it can’t parse into NA. Before you trust the conversion, check which original values failed — that’s usually where the real problem (stray text, a comma, a typo) is hiding.\nlibrary(dplyr)\n\n# check which values will fail to convert BEFORE you overwrite the column\nsurvey_raw |&gt;\n  filter(is.na(as.numeric(age)) & !is.na(age)) |&gt;\n  distinct(age)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(age = as.numeric(age))\n\n# check for new NAs introduced by the conversion\nsum(is.na(survey_raw$age))\n\n\n\n\n\n\nTip\n\n\n\nRun the “which values failed” check before you overwrite the column, not after — once age has been reassigned, the original text values are gone and you can’t see what caused the problem.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Variable types</span>"
+    ]
+  },
+  {
+    "objectID": "05-types.html#sec-types-exceldate",
+    "href": "05-types.html#sec-types-exceldate",
+    "title": "Variable types",
+    "section": "Fix an Excel date stored as a number",
+    "text": "Fix an Excel date stored as a number\n\nPackages: janitor\n\nThis shows up when a spreadsheet program stores a date as a serial number (e.g. 45678) instead of text — common after copy-pasting from Excel into a CSV.\nlibrary(janitor)\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(start_date = excel_numeric_to_date(as.numeric(start_date)))\n\n\n\n\n\n\nTip\n\n\n\nIf some dates parse and others don’t, check whether the column is a mix of real dates and Excel serial numbers — a common result of copy-pasting data from two different spreadsheets.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Variable types</span>"
+    ]
+  },
+  {
+    "objectID": "05-types.html#sec-types-tofactor",
+    "href": "05-types.html#sec-types-tofactor",
+    "title": "Variable types",
+    "section": "Convert a column to a factor",
+    "text": "Convert a column to a factor\n\nPackages: dplyr\n\nConvert grouping/categorical variables (like experimental condition) to factors before modeling — many R modeling functions treat factors differently from plain character columns.\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(condition = as.factor(condition))\n\n# check the levels\nlevels(survey_raw$condition)\n\n\n\n\n\n\nTip\n\n\n\nIf the order of levels matters (e.g. “Low” &lt; “Medium” &lt; “High”), set it explicitly with factor(condition, levels = c(\"Low\", \"Medium\", \"High\")) rather than relying on alphabetical order.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Variable types</span>"
+    ]
+  },
+  {
+    "objectID": "06-missing.html",
+    "href": "06-missing.html",
+    "title": "Missing data",
+    "section": "",
+    "text": "Check how missingness is coded\nPsychology surveys often use out-of-range numbers (999, -99, -1) to mean ‘missing’ rather than a true blank cell. Spotting these before analysis is essential — otherwise R will treat them as real scores.",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Missing data</span>"
+    ]
+  },
+  {
+    "objectID": "06-missing.html#sec-missing-check",
+    "href": "06-missing.html#sec-missing-check",
+    "title": "Missing data",
+    "section": "",
+    "text": "Packages: naniar dplyr\n\n\nlibrary(naniar)\nmiss_var_summary(survey_raw)   # official NAs per column\nvis_miss(survey_raw)\n\n# eyeball one column's actual values for suspicious codes\nlibrary(dplyr)\nsurvey_raw |&gt; count(mood_rating)\n\n\n\n\n\n\nTip\n\n\n\nCheck your study’s codebook — researchers usually document which numeric code means ‘missing’ for each measure.\n\n\n\nWhere to next:\n\nThey’re already blank/NA\nThey’re coded as numbers",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Missing data</span>"
+    ]
+  },
+  {
+    "objectID": "06-missing.html#sec-missing-recode",
+    "href": "06-missing.html#sec-missing-recode",
+    "title": "Missing data",
+    "section": "Convert coded missing values to real NA",
+    "text": "Convert coded missing values to real NA\n\nPackages: naniar\n\nnaniar’s replace_with_na() turns specific values into proper NA, so dplyr/tidyr functions recognise them as missing instead of as real data.\nlibrary(naniar)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  replace_with_na(replace = list(\n    age = c(-99, 999),\n    mood_rating = c(-99)\n  ))\n\n# or apply the same missing code to every column at once\nsurvey_raw &lt;- survey_raw |&gt;\n  replace_with_na_all(condition = ~ .x %in% c(-99, 999))\n\n\n\n\n\n\nTip\n\n\n\nKeep a note of which codes you replaced — it belongs in your methods write-up, not just your script.\n\n\n\nWhere to next:\n\nNow decide what to do about the missing values",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Missing data</span>"
+    ]
+  },
+  {
+    "objectID": "06-missing.html#sec-missing-decide",
+    "href": "06-missing.html#sec-missing-decide",
+    "title": "Missing data",
+    "section": "Decide what to do about missing values",
+    "text": "Decide what to do about missing values\n\nPackages: tidyr dplyr naniar\n\nOnce missing values are properly coded as NA, you have a few options depending on your design.\nlibrary(tidyr)\nlibrary(dplyr)\n\n# remove rows with ANY missing value\nsurvey_complete &lt;- survey_raw |&gt; drop_na()\n\n# remove rows missing on specific key variables only\nsurvey_complete &lt;- survey_raw |&gt; drop_na(age, condition)\n\n# flag participants with a lot of missing data instead of dropping automatically\nlibrary(naniar)\nsurvey_raw |&gt;\n  mutate(pct_missing = rowMeans(is.na(across(everything()))) * 100) |&gt;\n  filter(pct_missing &gt; 50)\n\n\n\n\n\n\nTip\n\n\n\nDon’t drop_na() the whole dataset by default — think about whether missingness is random or meaningful (e.g. someone quit the survey early) before deciding how to handle it.\n\n\n\nWhere to next:\n\nNow get a final overview",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Missing data</span>"
+    ]
+  },
+  {
+    "objectID": "07-dates.html",
+    "href": "07-dates.html",
+    "title": "Dates & durations",
+    "section": "",
+    "text": "Parse a date column\nlubridate’s parsing functions are named after the order your dates appear in: y = year, m = month, d = day. Pick the one matching your raw format.",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Dates & durations</span>"
+    ]
+  },
+  {
+    "objectID": "07-dates.html#sec-date-parse",
+    "href": "07-dates.html#sec-date-parse",
+    "title": "Dates & durations",
+    "section": "",
+    "text": "Packages: lubridate\n\n\nlibrary(lubridate)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(start_date = ymd(start_date))     # format: 2026-07-01\n  # mutate(start_date = mdy(start_date))   # format: 07/01/2026\n  # mutate(start_date = dmy(start_date))   # format: 01/07/2026\n  # mutate(start_time = ymd_hms(start_time)) # includes a time stamp\n\n# check nothing failed to parse\nsum(is.na(survey_raw$start_date))\n\n\n\n\n\n\nTip\n\n\n\nA sudden jump in NAs after parsing usually means you picked the wrong order (e.g. used mdy() on day-first dates).\n\n\n\nWhere to next:\n\nNow extract year/month/weekday\nNow calculate age",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Dates & durations</span>"
+    ]
+  },
+  {
+    "objectID": "07-dates.html#sec-date-age",
+    "href": "07-dates.html#sec-date-age",
+    "title": "Dates & durations",
+    "section": "Calculate age from date of birth",
+    "text": "Calculate age from date of birth\n\nPackages: lubridate dplyr\n\nSubtracting dates gives you days, so convert to years using lubridate’s time_length() for an accurate result (it accounts for leap years).\nlibrary(lubridate)\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(\n    dob = ymd(dob),\n    age_years = time_length(interval(dob, today()), \"years\")\n  )\n\n\n\n\n\n\nTip\n\n\n\nRound with floor(age_years) if you want age in completed years rather than a decimal.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Dates & durations</span>"
+    ]
+  },
+  {
+    "objectID": "07-dates.html#sec-date-duration",
+    "href": "07-dates.html#sec-date-duration",
+    "title": "Dates & durations",
+    "section": "Calculate survey duration",
+    "text": "Calculate survey duration\n\nPackages: lubridate\n\nUseful for spotting participants who rushed through (likely low-quality data) or who left the survey open for hours.\nlibrary(lubridate)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(\n    start_time = ymd_hms(start_time),\n    end_time   = ymd_hms(end_time),\n    duration_mins = time_length(interval(start_time, end_time), \"minutes\")\n  )\n\n\n\n\n\n\nTip\n\n\n\nFilter out implausible durations as a data-quality check, e.g. filter(duration_mins &lt; 1) for a survey that should take 20+ minutes.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Dates & durations</span>"
+    ]
+  },
+  {
+    "objectID": "07-dates.html#sec-date-extract",
+    "href": "07-dates.html#sec-date-extract",
+    "title": "Dates & durations",
+    "section": "Extract parts of a date",
+    "text": "Extract parts of a date\n\nPackages: lubridate dplyr\n\nHandy for grouping participants by data collection wave, or checking for day-of-week effects.\nlibrary(lubridate)\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(\n    year    = year(start_date),\n    month   = month(start_date, label = TRUE),\n    weekday = wday(start_date, label = TRUE)\n  )\n\n\n\n\n\n\nTip\n\n\n\nlabel = TRUE gives you readable labels (“Jan”, “Mon”) instead of plain numbers.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Dates & durations</span>"
+    ]
+  },
+  {
+    "objectID": "08-recode.html",
+    "href": "08-recode.html",
+    "title": "Recoding & scale scores",
+    "section": "",
+    "text": "Convert coded values to labels\ncase_when() is the modern, recommended way to do this in dplyr (it’s clearer with multiple conditions and is now preferred over the older recode() function).",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Recoding & scale scores</span>"
+    ]
+  },
+  {
+    "objectID": "08-recode.html#sec-recode-labels",
+    "href": "08-recode.html#sec-recode-labels",
+    "title": "Recoding & scale scores",
+    "section": "",
+    "text": "Packages: dplyr\n\n\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(gender = case_when(\n    gender == 1 ~ \"Male\",\n    gender == 2 ~ \"Female\",\n    gender == 3 ~ \"Nonbinary/other\",\n    TRUE ~ NA_character_\n  ))\n\n\n\n\n\n\nTip\n\n\n\nAlways include a fallback line (TRUE ~ NA_character_) so unexpected values become a visible NA instead of silently disappearing.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Recoding & scale scores</span>"
+    ]
+  },
+  {
+    "objectID": "08-recode.html#sec-recode-reverse",
+    "href": "08-recode.html#sec-recode-reverse",
+    "title": "Recoding & scale scores",
+    "section": "Reverse-score a Likert item",
+    "text": "Reverse-score a Likert item\n\nPackages: dplyr\n\nThe general formula for reverse-scoring is: reversed = (scale minimum + scale maximum) − original score.\nlibrary(dplyr)\n\n# example: a 1–5 Likert item, so min + max = 6\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(item3_r = 6 - item3)\n\n\n\n\n\n\nTip\n\n\n\nDouble-check your scale’s actual min and max before using this formula — a 0–4 scale uses 4, not 6.\n\n\n\nWhere to next:\n\nNow build a scale score",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Recoding & scale scores</span>"
+    ]
+  },
+  {
+    "objectID": "08-recode.html#sec-recode-scale",
+    "href": "08-recode.html#sec-recode-scale",
+    "title": "Recoding & scale scores",
+    "section": "Build a scale score from items",
+    "text": "Build a scale score from items\n\nPackages: dplyr\n\nacross() lets you average (or sum) several item columns at once into a single total score.\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(anxiety_total = rowMeans(across(c(item1, item2, item3_r, item4)), na.rm = TRUE))\n\n# or a sum instead of a mean:\n# mutate(anxiety_total = rowSums(across(c(item1, item2, item3_r, item4)), na.rm = TRUE))\n\n\n\n\n\n\nTip\n\n\n\nReverse-score any relevant items first (previous step) before averaging them into a total — otherwise the scale score will be wrong.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Recoding & scale scores</span>"
+    ]
+  },
+  {
+    "objectID": "08-recode.html#sec-recode-case-when",
+    "href": "08-recode.html#sec-recode-case-when",
+    "title": "Recoding & scale scores",
+    "section": "Recode based on a condition",
+    "text": "Recode based on a condition\n\nPackages: dplyr\n\ncase_when() evaluates conditions top-to-bottom and uses the first one that matches — great for turning a continuous variable into groups.\nlibrary(dplyr)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  mutate(age_group = case_when(\n    age &lt; 18 ~ \"under 18\",\n    age &gt;= 18 & age &lt; 30 ~ \"18-29\",\n    age &gt;= 30 & age &lt; 50 ~ \"30-49\",\n    age &gt;= 50 ~ \"50+\",\n    TRUE ~ NA_character_\n  ))\n\n\n\n\n\n\nTip\n\n\n\nOrder matters — case_when() stops at the first TRUE condition, so put more specific rules earlier.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Recoding & scale scores</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshape.html",
+    "href": "09-reshape.html",
+    "title": "Reshape wide & long",
+    "section": "",
+    "text": "Reshape wide to long\nLong format — one row per observation — is what most repeated-measures ANOVAs and mixed-effects models in R expect.",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshape wide & long</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshape.html#sec-reshape-long",
+    "href": "09-reshape.html#sec-reshape-long",
+    "title": "Reshape wide & long",
+    "section": "",
+    "text": "Packages: tidyr\n\n\nlibrary(tidyr)\n\nsurvey_long &lt;- survey_raw |&gt;\n  pivot_longer(\n    cols = starts_with(\"trial\"),\n    names_to = \"trial\",\n    values_to = \"rt\"\n  )\n\n\n\n\n\n\nTip\n\n\n\ncols accepts helpers like starts_with(), contains(), or just a plain vector of column names.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshape wide & long</span>"
+    ]
+  },
+  {
+    "objectID": "09-reshape.html#sec-reshape-wide",
+    "href": "09-reshape.html#sec-reshape-wide",
+    "title": "Reshape wide & long",
+    "section": "Reshape long to wide",
+    "text": "Reshape long to wide\n\nPackages: tidyr\n\nUseful when you need one row per participant for a correlation matrix or a simple summary table.\nlibrary(tidyr)\n\nsurvey_wide &lt;- survey_long |&gt;\n  pivot_wider(\n    names_from = trial,\n    values_from = rt\n  )\n\n\n\n\n\n\nTip\n\n\n\npivot_wider() and pivot_longer() are exact inverses — if something looks wrong, try reversing the operation to see where it breaks.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Cleaning",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Reshape wide & long</span>"
+    ]
+  },
+  {
+    "objectID": "10-filter.html",
+    "href": "10-filter.html",
+    "title": "Inclusion & exclusion",
+    "section": "",
+    "text": "Filter rows to keep — inclusion criteria\nUse filter() when you can describe who you want to KEEP. Watch out: filter() treats NA like FALSE, so rows with a missing value on your filtering variable get silently dropped too — not just the rows that truly fail the criteria.",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Inclusion & exclusion</span>"
+    ]
+  },
+  {
+    "objectID": "10-filter.html#sec-filter-keep",
+    "href": "10-filter.html#sec-filter-keep",
+    "title": "Inclusion & exclusion",
+    "section": "",
+    "text": "Packages: dplyr\n\n\nlibrary(dplyr)\n\n# keep only participants who consented and are 18+\nsurvey_raw &lt;- survey_raw |&gt;\n  filter(consent == \"Yes\", age &gt;= 18)\n\n\n\n\n\n\nTip\n\n\n\nBecause filter() drops NA rows on the condition, always compare nrow() before and after, and check whether anyone was dropped only because of a missing value rather than truly failing the criteria.\n\n\n\nWhere to next:\n\nSee the drop-focused version (filter_out)\nNow check your data is clean",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Inclusion & exclusion</span>"
+    ]
+  },
+  {
+    "objectID": "10-filter.html#sec-filter-out",
+    "href": "10-filter.html#sec-filter-out",
+    "title": "Inclusion & exclusion",
+    "section": "Filter rows out — exclusion criteria",
+    "text": "Filter rows out — exclusion criteria\n\nPackages: dplyr\n\nfilter_out(), added in dplyr 1.2.0, is the companion to filter() built specifically for describing who you want to REMOVE. Unlike a negated filter() (using !condition), filter_out() treats NA like FALSE too — so participants with a missing value on your exclusion variable are correctly kept rather than accidentally dropped. Requires dplyr 1.2.0 or later (packageVersion(\"dplyr\") to check).\nlibrary(dplyr)\n\n# drop anyone who withdrew consent, or failed the attention check\nsurvey_raw &lt;- survey_raw |&gt;\n  filter_out(consent == \"Withdrew\", attention_check == \"Failed\")\n\n# compare: the old, error-prone way to write the same thing with filter()\n# survey_raw |&gt; filter(!(consent == \"Withdrew\" & attention_check == \"Failed\"))\n# ...that version silently mishandles any row with an NA in either column\n\n\n\n\n\n\nTip\n\n\n\nReach for filter_out() any time you catch yourself writing != or wrapping a condition in !( ) to describe who to exclude — that’s exactly the pattern it replaces.\n\n\n\nWhere to next:\n\nSee the keep-focused version (filter)\nNow check your data is clean",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Inclusion & exclusion</span>"
+    ]
+  },
+  {
+    "objectID": "10-filter.html#sec-filter-both",
+    "href": "10-filter.html#sec-filter-both",
+    "title": "Inclusion & exclusion",
+    "section": "Apply a full inclusion/exclusion checklist",
+    "text": "Apply a full inclusion/exclusion checklist\n\nPackages: dplyr\n\nMost studies apply both at once — keep the eligible, then drop the excluded. Doing this as two explicit steps (rather than one long condition) keeps your criteria easy to read back later, e.g. when writing a participant-flow paragraph for a methods section.\nlibrary(dplyr)\n\nn_start &lt;- nrow(survey_raw)\n\nsurvey_raw &lt;- survey_raw |&gt;\n  # inclusion: keep only eligible participants\n  filter(consent == \"Yes\", age &gt;= 18) |&gt;\n  # exclusion: drop anyone who should be removed even if eligible\n  filter_out(attention_check == \"Failed\", duplicate_flag == TRUE)\n\nn_end &lt;- nrow(survey_raw)\nn_start - n_end   # how many participants were removed\n\n\n\n\n\n\nTip\n\n\n\nKeep a running count like n_start/n_end for every inclusion/exclusion step — it’s exactly the number you’ll need for a CONSORT-style participant flow description.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Inclusion & exclusion</span>"
+    ]
+  },
+  {
+    "objectID": "11-duplicates.html",
+    "href": "11-duplicates.html",
+    "title": "Duplicates",
+    "section": "",
+    "text": "Packages: janitor dplyr\n\nDuplicate participant IDs can mean a participant submitted twice, a data entry error, or sometimes a genuine repeated-measures row — check before deleting.\nlibrary(janitor)\n\n# see the actual duplicate rows\nsurvey_raw |&gt; get_dupes(participant_id)\n\nlibrary(dplyr)\n# keep only the first occurrence of each ID\nsurvey_raw &lt;- survey_raw |&gt; distinct(participant_id, .keep_all = TRUE)\n\n\n\n\n\n\nTip\n\n\n\nInvestigate why a duplicate exists before deleting it — it might be a legitimate second session, not an error.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Duplicates</span>"
+    ]
+  },
+  {
+    "objectID": "12-combine.html",
+    "href": "12-combine.html",
+    "title": "Combine files",
+    "section": "",
+    "text": "Stack files with matching columns\nbind_rows() stacks data frames on top of each other, matching by column name (filling any column that’s missing in one file with NA).",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Combine files</span>"
+    ]
+  },
+  {
+    "objectID": "12-combine.html#sec-combine-bind",
+    "href": "12-combine.html#sec-combine-bind",
+    "title": "Combine files",
+    "section": "",
+    "text": "Packages: readr dplyr here\n\n\nlibrary(readr)\nlibrary(dplyr)\nlibrary(here)\n\nbatch1 &lt;- read_csv(here(\"data\", \"raw\", \"batch1.csv\"))\nbatch2 &lt;- read_csv(here(\"data\", \"raw\", \"batch2.csv\"))\n\nall_data &lt;- bind_rows(batch1, batch2)\n\n\n\n\n\n\nTip\n\n\n\nRun clean_names() on each file first — bind_rows() matches by exact column name, so inconsistent naming will create extra columns instead of an error.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Combine files</span>"
+    ]
+  },
+  {
+    "objectID": "12-combine.html#sec-combine-join",
+    "href": "12-combine.html#sec-combine-join",
+    "title": "Combine files",
+    "section": "Merge files by participant ID",
+    "text": "Merge files by participant ID\n\nPackages: dplyr here\n\nleft_join() keeps every row from your first (left) dataset and attaches matching columns from the second wherever the ID matches.\nlibrary(dplyr)\nlibrary(here)\n\ndemographics   &lt;- read_csv(here(\"data\", \"raw\", \"demographics.csv\"))\nsurvey_scores  &lt;- read_csv(here(\"data\", \"raw\", \"survey_scores.csv\"))\n\nfull_data &lt;- left_join(demographics, survey_scores, by = \"participant_id\")\n\n# check for participants that didn't find a match\nfull_data |&gt; filter(is.na(survey_score))\n\n\n\n\n\n\nTip\n\n\n\nIf row counts look wrong after joining, check for duplicate IDs in either file first — they cause joins to multiply rows unexpectedly.\n\n\n\nWhere to next:\n\nNow check your data is clean",
+    "crumbs": [
+      "Rows & files",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Combine files</span>"
+    ]
+  },
+  {
+    "objectID": "13-validate.html",
+    "href": "13-validate.html",
+    "title": "Check your data is clean",
+    "section": "",
+    "text": "Packages: dplyr janitor naniar\n\nA short checklist to re-run every time you update your cleaning script, before you trust the data enough to analyse it.\nlibrary(dplyr)\n\n# range checks — anything outside a plausible range?\nsurvey_raw |&gt; filter(age &lt; 0 | age &gt; 100)\nsurvey_raw |&gt; filter(if_any(starts_with(\"item\"), ~ . &lt; 1 | . &gt; 5))\n\n# unique participant IDs?\nlibrary(janitor)\nsurvey_raw |&gt; get_dupes(participant_id)\n\n# any missingness left unaccounted for?\nlibrary(naniar)\nvis_miss(survey_raw)\n\n\n\n\n\n\nTip\n\n\n\nSave these checks as their own short script — re-running it every time you touch the raw data catches problems early.\n\n\n\nWhere to next:\n\nNow save the clean data",
+    "crumbs": [
+      "Finishing up",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Check your data is clean</span>"
+    ]
+  },
+  {
+    "objectID": "14-export.html",
+    "href": "14-export.html",
+    "title": "Save your clean data",
+    "section": "",
+    "text": "Packages: readr here\n\nsurvey_raw has been modified in place at every step so far — this is the one point where it gets a new name. Calling it survey_clean here marks it as finished: ready for analysis, not to be edited by hand. The goal of reproducible cleaning is that you could delete survey_clean.csv entirely and regenerate it perfectly by re-running your script.\nlibrary(readr)\nlibrary(here)\n\nsurvey_clean &lt;- survey_raw\n\nwrite_csv(survey_clean, here(\"data\", \"clean\", \"survey_clean.csv\"))\n\n\n\n\n\n\nTip\n\n\n\nNever hand-edit survey_clean.csv. If you spot an error, fix it in the cleaning script and re-run the whole thing from the raw file. Keeping raw and clean files in separate folders (data/raw/ vs data/clean/) makes it obvious at a glance which file is safe to overwrite.\n\n\n\nDone. That’s the end of this path — your data should now be ready to analyse.",
+    "crumbs": [
+      "Finishing up",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Save your clean data</span>"
+    ]
+  }
+]
