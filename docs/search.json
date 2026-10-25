@@ -14,7 +14,7 @@
     "href": "index.html#how-to-use-this",
     "title": "Data Wrangling Tool",
     "section": "How to use this",
-    "text": "How to use this\nData cleaning usually follows a fairly consistent set of steps — from setting up your project, through importing and checking your data, to saving a clean version ready for analysis. You can work through those steps in order from start to finish, or jump straight to whichever task matches what you’re stuck on right now — whatever’s useful for your data today. Each section ends with real R code you can copy into your script, plus a tip about why it matters.\nBefore you start, install the packages once: install.packages(c(\"tidyverse\", \"janitor\", \"naniar\", \"here\", \"DataExplorer\")). Then at the top of every cleaning script: library(tidyverse) loads dplyr, tidyr, readr, and lubridate together; add library(janitor), library(naniar), library(here) and library(DataExplorer) separately.\nStart every project as an RStudio Project with separate folders for raw and clean data, and use here() to build file paths (e.g. here(\"data\", \"raw\", \"survey_raw.csv\")) instead of typing them out by hand — see Set up your project.",
+    "text": "How to use this\nData cleaning usually follows a fairly consistent set of steps — from setting up your project, through importing and checking your data, to saving a clean version ready for analysis. You can work through those steps in order from start to finish, or jump straight to whichever task matches what you’re stuck on right now — whatever’s useful for your data today. Each section ends with real R code you can copy into your script, plus a tip about why it matters.\nBefore you start, install the packages once:\ninstall.packages(c(\"tidyverse\", \"janitor\", \"naniar\", \"here\", \"DataExplorer\"))\nThen at the top of every cleaning script use the library() function to load the packages you will need.\nlibrary(tidyverse) # loads dplyr, tidyr, readr, and lubridate together library(janitor)\nlibrary(naniar)\nlibrary(here)\nlibrary(DataExplorer)\nStart every project as an RStudio Project with separate folders for raw and clean data, and use here() to build file paths (e.g. here(\"data\", \"raw\", \"survey_raw.csv\")) instead of typing them out by hand — see Set up your project.",
     "crumbs": [
       "Welcome"
     ]
@@ -134,6 +134,17 @@
     "title": "Get an overview & spot problems",
     "section": "janitor",
     "text": "janitor\ntabyl() gives you a frequency table for one categorical column — counts and percentages for every value it contains. Use it to catch typo’d or inconsistently capitalized categories, unexpectedly rare or common groups, and missing-data codes turning up as their own “category.”\nlibrary(janitor)\n\nsurvey_raw |&gt; \n  tabyl(gender)",
+    "crumbs": [
+      "Getting started",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
+    ]
+  },
+  {
+    "objectID": "03-overview.html#dataexplorer",
+    "href": "03-overview.html#dataexplorer",
+    "title": "Get an overview & spot problems",
+    "section": "DataExplorer",
+    "text": "DataExplorer\nTry plot_histogram() to look for crazy values in continuous variables, plot_bar() to find coding errors in categorical variables, and plot_missing() to look at where your data is missing unexpectedly.\nlibrary(DataExplorer)\n\nsurvey_raw |&gt; \n  plot_histogram()\n  \nsurvey_raw |&gt; \n  plot_bar()\n  \nsurvey_raw |&gt; \n  plot_missing()\n  \n\n\n\n\n\n\nTip\n\n\n\nRe-run glimpse(), vis_miss(), tabyl() and/or the plot_x() functions after each cleaning step, not just at the start — it’s the fastest way to confirm a fix actually worked.\n\n\n\n\n\n\n\n\nNoteWhat kind of problems are you looking for?\n\n\n\n\n\n\nWrong variable types — a date or number showing up as &lt;chr&gt; (text), usually caused by a stray character, symbol, or an Excel serial number.\nColumn names that aren’t meaningful — survey-platform codes like q3, Q7, or SQ001 instead of descriptive names.\nSuspicious numeric values that are probably missing-data codes in disguise — things like -99, 999, or -1 sitting in an otherwise 1-5 range.\nWide data that needs to be long (or vice versa) — repeated trials or timepoints spread across separate columns instead of stacked into rows for plotting/modeling.\nExtra columns you don’t need — survey-platform metadata like IP address, browser info, or progress percentage that came along with the export.\nColumns that are entirely (or almost entirely) missing — often an unused survey question or something that didn’t export properly.\nInconsistent category labels within the same variable — \"Female\", \"female\", and \"FEMALE\" being treated as three different groups.\nAn unexpected number of rows — more or fewer than you expected can mean a duplicated import, a botched merge, or test/preview responses left in the file.\nImplausible values — ages over 100, ratings outside the scale’s range, reaction times of 9999ms — worth a first skim even before the formal validation step later.\nOne column doing two jobs — e.g. a single field holding multiple “select all that apply” answers separated by commas.\n\n\n\n\n\nWhere to next:\n\nNow clean column names\nNow check & convert variable types\nNow deal with missing data\nNow reshape wide/long",
     "crumbs": [
       "Getting started",
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
@@ -522,17 +533,6 @@
     "crumbs": [
       "Finishing up",
       "<span class='chapter-number'>14</span>  <span class='chapter-title'>Save your clean data</span>"
-    ]
-  },
-  {
-    "objectID": "03-overview.html#dataexplorer",
-    "href": "03-overview.html#dataexplorer",
-    "title": "Get an overview & spot problems",
-    "section": "DataExplorer",
-    "text": "DataExplorer\nTry plot_histogram() to look for crazy values in continuous variables, plot_bar() to find coding errors in categorical variables, and plot_missing() to look at where your data is missing unexpectedly.\nlibrary(DataExplorer)\n\nsurvey_raw |&gt; \n  plot_histogram()\n  \nsurvey_raw |&gt; \n  plot_bar()\n  \nsurvey_raw |&gt; \n  plot_missing()\n  \n\n\n\n\n\n\nTip\n\n\n\nRe-run glimpse(), vis_miss(), tabyl() and/or the plot_x() functions after each cleaning step, not just at the start — it’s the fastest way to confirm a fix actually worked.\n\n\n\n\n\n\n\n\nNoteWhat kind of problems are you looking for?\n\n\n\n\n\n\nWrong variable types — a date or number showing up as &lt;chr&gt; (text), usually caused by a stray character, symbol, or an Excel serial number.\nColumn names that aren’t meaningful — survey-platform codes like q3, Q7, or SQ001 instead of descriptive names.\nSuspicious numeric values that are probably missing-data codes in disguise — things like -99, 999, or -1 sitting in an otherwise 1-5 range.\nWide data that needs to be long (or vice versa) — repeated trials or timepoints spread across separate columns instead of stacked into rows for plotting/modeling.\nExtra columns you don’t need — survey-platform metadata like IP address, browser info, or progress percentage that came along with the export.\nColumns that are entirely (or almost entirely) missing — often an unused survey question or something that didn’t export properly.\nInconsistent category labels within the same variable — \"Female\", \"female\", and \"FEMALE\" being treated as three different groups.\nAn unexpected number of rows — more or fewer than you expected can mean a duplicated import, a botched merge, or test/preview responses left in the file.\nImplausible values — ages over 100, ratings outside the scale’s range, reaction times of 9999ms — worth a first skim even before the formal validation step later.\nOne column doing two jobs — e.g. a single field holding multiple “select all that apply” answers separated by commas.\n\n\n\n\n\nWhere to next:\n\nNow clean column names\nNow check & convert variable types\nNow deal with missing data\nNow reshape wide/long",
-    "crumbs": [
-      "Getting started",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Get an overview & spot problems</span>"
     ]
   }
 ]

@@ -10,7 +10,22 @@ Cleaning messy psychology survey data with R & the tidyverse — work your way f
 
 Data cleaning usually follows a fairly consistent set of steps — from setting up your project, through importing and checking your data, to saving a clean version ready for analysis. You can work through those steps in order from start to finish, or jump straight to whichever task matches what you're stuck on right now — whatever's useful for your data today. Each section ends with real R code you can copy into your script, plus a tip about why it matters.
 
-Before you start, install the packages once: `install.packages(c("tidyverse", "janitor", "naniar", "here", "DataExplorer"))`. Then at the top of every cleaning script: `library(tidyverse)` loads dplyr, tidyr, readr, and lubridate together; add `library(janitor)`, `library(naniar)`, `library(here)` and `library(DataExplorer)` separately.
+Before you start, install the packages once: 
+
+```r
+install.packages(c("tidyverse", "janitor", "naniar", "here", "DataExplorer"))
+
+```
+Then at the top of every cleaning script use the library() function to load the packages you will need.  
+
+```r
+library(tidyverse) # loads dplyr, tidyr, readr, and lubridate together library(janitor)
+library(naniar)
+library(here)
+library(DataExplorer)
+
+```
+
 
 Start every project as an **RStudio Project** with separate folders for raw and clean data, and use `here()` to build file paths (e.g. `here("data", "raw", "survey_raw.csv")`) instead of typing them out by hand — see [Set up your project](01-setup.qmd).
 
