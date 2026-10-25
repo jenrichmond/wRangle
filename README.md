@@ -6,7 +6,7 @@ tidyverse (dplyr, tidyr, readr, lubridate), janitor, naniar, and here.
 Work through it from raw import to an analysis-ready dataset, or jump straight
 to whichever task matches what you're stuck on.
 
-Built by [Reveal Research](https://www.revealresearch.org).
+Built by [Reveal Research](https://www.revealresearch.org) in collaboration with Claude Cowork. .
 
 ## Editing
 
@@ -48,16 +48,28 @@ Code is in plain ` ```r ` blocks, so the book renders without running any R.
 
 ## Building the site
 
-In RStudio, open the folder as a project and click **Render Book** (Build
-pane), or from a terminal run:
+In RStudio, open the folder as a project. Use `quarto preview` in the
+terminal for a live preview that refreshes as you edit, or click
+**Render Book** (Build pane) to build it once.
+
+## Publishing
+
+The site is published to GitHub Pages from the `gh-pages` branch. After
+editing, commit and push your source files as usual, then publish:
 
 ```
-quarto render
+git add .
+git commit -m "Describe your change"
+git push
+quarto publish gh-pages
 ```
 
-The site is written to `docs/`. To publish with GitHub Pages, commit `docs/`
-and set Settings → Pages → Source to the `main` branch, `/docs` folder. Use
-`quarto preview` for a live preview that refreshes as you edit.
+`quarto publish gh-pages` renders the book and pushes the built site to the
+`gh-pages` branch for you, so you never edit that branch directly. The site
+goes live at https://jenrichmond.github.io/wRangle/ a minute or two later.
+
+Local renders are written to `docs/`, which is ignored by git. It's just a
+preview copy, so don't commit it.
 
 ## Suggesting changes
 
